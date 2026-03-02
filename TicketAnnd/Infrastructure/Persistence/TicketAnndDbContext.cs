@@ -1,0 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using TicketAnnd.Domain.Entities;
+
+namespace TicketAnnd.Infrastructure.Persistence;
+
+public class TicketAnndDbContext : DbContext
+{
+    public TicketAnndDbContext(DbContextOptions<TicketAnndDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<TicketAssign> TicketAssigns => Set<TicketAssign>();
+    public DbSet<Company> Companies => Set<Company>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Agent> Agents => Set<Agent>();
+    public DbSet<Categrory> Categories => Set<Categrory>();
+    public DbSet<TicketPick> TicketPicks => Set<TicketPick>();
+    public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
+    public DbSet<SlaRule> SlaRules => Set<SlaRule>();
+    public DbSet<UserCompanyRole> UserCompanyRoles => Set<UserCompanyRole>();
+    public DbSet<UserAgent> UserAgents => Set<UserAgent>();
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TicketAnndDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+}

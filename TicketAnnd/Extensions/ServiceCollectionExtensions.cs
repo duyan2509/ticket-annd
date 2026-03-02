@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using TicketAnnd.Persistence;
+using TicketAnnd.Infrastructure.Persistence;
 
 namespace TicketAnnd.Extensions;
 
@@ -24,9 +24,7 @@ public static class ServiceCollectionExtensions
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<TicketAnndDbContext>(options =>
-        {
-            options.UseNpgsql(connectionString);
-        });
+            options.UseNpgsql(connectionString));
 
         return services;
     }
