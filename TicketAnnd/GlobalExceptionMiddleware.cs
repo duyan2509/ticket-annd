@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Authentication;
 using System.Text.Json;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TicketAnnd.Application;
@@ -42,6 +43,21 @@ public class GlobalExceptionMiddleware
             statusCode = (HttpStatusCode)appEx.StatusCode;
             message = appEx.Message;
         }
+        else if (exception is ValidationException validationEx)
+        {
+            statusCode = HttpStatusCode.BadRequest;
+            var errors = validationEx.Errors
+                .Select(e => new ValidationErrorDto { PropertyName = e.PropertyName, ErrorMessage = e.ErrorMessage })
+                .ToList();
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+            return context.Response.WriteAsync(JsonSerializer.Serialize(new ValidationErrorResponse
+            {
+                StatusCode = (int)statusCode,
+                Message = "Validation failed.",
+                Errors = errors
+            }));
+        }
         else
         {
             switch (exception)
@@ -74,7 +90,6 @@ public class GlobalExceptionMiddleware
         {
             StatusCode = (int)statusCode,
             Message = message,
-            TraceId = context.TraceIdentifier
         };
 
         context.Response.ContentType = "application/json";
@@ -87,5 +102,15 @@ public class ErrorResponse
 {
     public int StatusCode { get; set; }
     public string Message { get; set; } = string.Empty;
-    public string TraceId { get; set; } = string.Empty;
+}
+
+public class ValidationErrorResponse : ErrorResponse
+{
+    public List<ValidationErrorDto> Errors { get; set; } = new();
+}
+
+public class ValidationErrorDto
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
 }
