@@ -9,5 +9,5 @@ public class Invitation:BaseEntity
     public string Email { get; set; }
     public DateTime Expires { get; set; }
     public InviationStatuses Status { get; set; } = InviationStatuses.Pending;
-    public CompanyRoles Role { get; set; } = CompanyRoles.Customer;
+    public AppRoles Role { get; set; } = AppRoles.Customer;
 }

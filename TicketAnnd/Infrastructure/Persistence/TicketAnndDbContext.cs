@@ -22,6 +22,7 @@ public class TicketAnndDbContext : DbContext
     public DbSet<UserAgent> UserAgents => Set<UserAgent>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
