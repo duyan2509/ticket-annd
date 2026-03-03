@@ -34,13 +34,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     {
         var user = await _userRepository.GetLoginUserByEmailAsync(request.Email, cancellationToken);
         if (user == null)
-            throw new InvalidCredentialException("Invalid email or password.");
+            throw new BadRequestException("Invalid email or password.");
 
         if (!user.IsActive)
             throw new InvalidCredentialException("Account is disabled.");
 
         if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
-            throw new InvalidCredentialException("Invalid email or password.");
+            throw new BadRequestException("Invalid email or password.");
        
         var companyId = Guid.Empty;
         string? role;

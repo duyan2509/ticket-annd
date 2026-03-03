@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Auth;
 
@@ -10,18 +11,24 @@ namespace TicketAnnd.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    public const string RefreshTokenCookieName = "refreshToken";
+    private const int RefreshTokenMaxAgeDays = 7;
 
-    public AuthController(IMediator mediator)
+    private readonly IMediator _mediator;
+    private readonly IWebHostEnvironment _env;
+
+    public AuthController(IMediator mediator, IWebHostEnvironment env)
     {
         _mediator = mediator;
+        _env = env;
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new LoginCommand(request.Email, request.Password), cancellationToken);
-        return Ok(result);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
     }
 
     [HttpPost("register")]
@@ -32,9 +39,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
+    [Authorize]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
-        await _mediator.Send(new LogoutCommand(request.RefreshToken), cancellationToken);
+        var refreshToken = Request.Cookies[RefreshTokenCookieName];
+        await _mediator.Send(new LogoutCommand(refreshToken), cancellationToken);
+        ClearRefreshTokenCookie();
         return NoContent();
     }
 
@@ -53,12 +63,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new RefreshTokenCommand(request.RefreshToken), cancellationToken);
+        var refreshToken = Request.Cookies[RefreshTokenCookieName];
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized();
+        var result = await _mediator.Send(new RefreshTokenCommand(refreshToken), cancellationToken);
         if (result == null)
             return Unauthorized();
-        return Ok(result);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
     }
 
     [Authorize]
@@ -69,7 +83,8 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             return Unauthorized();
 
-        var result = await _mediator.Send(new GetMeQuery(userId), cancellationToken);
+        var refreshToken = Request.Cookies[RefreshTokenCookieName];
+        var result = await _mediator.Send(new GetMeQuery(userId, refreshToken), cancellationToken);
         if (result == null)
             return NotFound();
         return Ok(result);
@@ -96,13 +111,31 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         var result = await _mediator.Send(new SwitchRoleCommand(userId, request.CompanyId), cancellationToken);
-        return Ok(result);
+        SetRefreshTokenCookie(result.RefreshToken);
+        return Ok(new { accessToken = result.AccessToken });
+    }
+
+    private void SetRefreshTokenCookie(string token)
+    {
+        var options = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = !_env.IsDevelopment(),
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            MaxAge = TimeSpan.FromDays(RefreshTokenMaxAgeDays),
+        };
+        Response.Cookies.Append(RefreshTokenCookieName, token, options);
+    }
+
+    private void ClearRefreshTokenCookie()
+    {
+        Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions { Path = "/" });
     }
 }
 
 public record LoginRequest(string Email, string Password);
 public record RegisterRequest(string Email, string Password);
-public record LogoutRequest(string RefreshToken);
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 public record RefreshTokenRequest(string RefreshToken);
