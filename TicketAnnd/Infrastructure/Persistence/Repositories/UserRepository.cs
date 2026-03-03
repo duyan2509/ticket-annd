@@ -39,7 +39,8 @@ public class UserRepository : IUserRepository
             {
                 Id = u.Id,
                 Email = u.Email,
-                IsActive = u.IsActive
+                IsActive = u.IsActive,
+                IsSuperAdmin = u.IsSuperAdmin
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

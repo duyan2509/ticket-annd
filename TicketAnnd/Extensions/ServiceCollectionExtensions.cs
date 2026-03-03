@@ -1,5 +1,6 @@
 using System.Text;
 using AutoMapper;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using TicketAnnd.Application.Behaviors;
 using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Repositories;
@@ -114,6 +116,8 @@ public static class ServiceCollectionExtensions
         {
             cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
         });
+        services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;
     }
