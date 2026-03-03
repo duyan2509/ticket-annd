@@ -1,10 +1,18 @@
+using System.Text;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using TicketAnnd.Application.Common;
+using TicketAnnd.Domain;
+using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Infrastructure.Persistence;
+using TicketAnnd.Infrastructure.Persistence.Repositories;
+using TicketAnnd.Infrastructure.Services;
 
 namespace TicketAnnd.Extensions;
 
@@ -16,7 +24,53 @@ public static class ServiceCollectionExtensions
         services.AddMongo(configuration);
         services.AddMapper();
         services.AddCqrs();
+        services.AddAuth(configuration);
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddRepositories();
+        services.AddApplicationServices(configuration);
 
+        return services;
+    }
+
+    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
+    {
+        var key = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key not set");
+        var issuer = configuration["Jwt:Issuer"] ?? "TicketAnnd";
+        var audience = configuration["Jwt:Audience"] ?? "TicketAnnd";
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
+                    ValidateAudience = true,
+                    ValidAudience = audience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+        return services;
+    }
+
+    public static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IUserCompanyRoleRepository, UserCompanyRoleRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IEmailSender, MailtrapEmailSender>();
         return services;
     }
 
