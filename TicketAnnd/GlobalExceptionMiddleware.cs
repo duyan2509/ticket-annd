@@ -1,8 +1,10 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Authentication;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TicketAnnd.Application;
+using TicketAnnd.Extensions;
 
 namespace TicketAnnd;
 
@@ -51,6 +53,16 @@ public class GlobalExceptionMiddleware
                     break;
 
                 case ArgumentException:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = exception.Message;
+                    break;
+
+                case DbUpdateException dbEx when dbEx.IsUniqueConstraintViolation():
+                    statusCode = HttpStatusCode.Conflict;
+                    message = "A resource with this value already exists.";
+                    break;
+
+                case InvalidOperationException:
                     statusCode = HttpStatusCode.BadRequest;
                     message = exception.Message;
                     break;
