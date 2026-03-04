@@ -61,7 +61,7 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
             .AsNoTracking()
             .Where(x => x.UserId == userId)
             .Join(
-                _context.Set<Domain.Entities.Company>(),
+                _context.Set<Company>(),
                 ucr => ucr.CompanyId,
                 c => c.Id,
                 (ucr, c) => new CompanyOptionReadModel
@@ -72,5 +72,39 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
                 })
             .OrderBy(x => x.CompanyName)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<CompanyPagedResultReadModel> GetCompanyOptionsPagedByUserIdAsync(Guid userId, int page  = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var baseQuery = _context.UserCompanyRoles.AsNoTracking().Where(x => x.UserId == userId);
+        var total = await baseQuery.CountAsync(cancellationToken);
+
+        var items = await baseQuery
+            .Join(
+                _context.Set<Company>(),
+                ucr => ucr.CompanyId,
+                c => c.Id,
+                (ucr, c) => new { ucr, c })
+            .OrderBy(x => x.c.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new CompanyPagedItemReadModel
+            {
+                CompanyId = x.ucr.CompanyId,
+                CompanyName = x.c.Name ?? string.Empty,
+                Role = x.ucr.Role.ToString()
+            })
+            .ToListAsync(cancellationToken);
+
+        return new CompanyPagedResultReadModel
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            Size = pageSize,
+        };
     }
 }

@@ -16,7 +16,13 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.HasIndex(c => c.Name)
+        builder.HasIndex(c => c.OwnerId);
+
+        builder.Property(c => c.Slug)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        builder.HasIndex(c => c.Slug)
             .IsUnique();
     }
 }
