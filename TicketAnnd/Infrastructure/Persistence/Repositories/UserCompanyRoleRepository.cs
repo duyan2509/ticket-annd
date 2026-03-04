@@ -34,10 +34,16 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
             .AsNoTracking()
             .Where(x => x.UserId == userId)
             .OrderBy(x => x.CompanyId)
+            .Join(
+                _context.Set<Company>(),
+                ucr => ucr.CompanyId,
+                c => c.Id,
+                (ucr, c) => new { ucr, c })
             .Select(x => new UserCompanyRoleReadModel
             {
-                CompanyId = x.CompanyId,
-                Role = x.Role
+                CompanyId = x.ucr.CompanyId,
+                Role = x.ucr.Role,
+                CompanyName = x.c.Name ?? string.Empty
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -47,10 +53,16 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
         return await _context.UserCompanyRoles
             .AsNoTracking()
             .Where(x => x.UserId == userId && x.CompanyId == companyId)
+            .Join(
+                _context.Set<Company>(),
+                ucr => ucr.CompanyId,
+                c => c.Id,
+                (ucr, c) => new { ucr, c })
             .Select(x => new UserCompanyRoleReadModel
             {
-                CompanyId = x.CompanyId,
-                Role = x.Role
+                CompanyId = x.ucr.CompanyId,
+                Role = x.ucr.Role,
+                CompanyName = x.c.Name ?? string.Empty
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

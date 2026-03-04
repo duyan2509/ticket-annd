@@ -27,6 +27,7 @@ public class GetMeQueryHandler : IRequestHandler<GetMeQuery, MeResult?>
             return null;
 
         string currentRole;
+        string? companyName = null;
 
         if (!string.IsNullOrEmpty(request.RefreshTokenFromCookie))
         {
@@ -37,6 +38,7 @@ public class GetMeQueryHandler : IRequestHandler<GetMeQuery, MeResult?>
                 {
                     var companyRole = await _userCompanyRoleRepository.GetByUserIdAndCompanyIdAsync(request.UserId, tokenModel.CompanyId, cancellationToken);
                     currentRole = companyRole?.Role.ToString() ?? nameof(AppRoles.EmptyUser);
+                    companyName = companyRole?.CompanyName;
                 }
                 else
                 {
@@ -53,7 +55,7 @@ public class GetMeQueryHandler : IRequestHandler<GetMeQuery, MeResult?>
             currentRole = await ResolveRoleWhenNoCompany(user.IsSuperAdmin);
         }
 
-        return new MeResult(user.Id, user.Email, user.IsActive, currentRole);
+        return new MeResult(user.Id, user.Email, user.IsActive, currentRole, companyName);
     }
 
     private static Task<string> ResolveRoleWhenNoCompany(bool isSuperAdmin)
