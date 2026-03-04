@@ -24,23 +24,14 @@ public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand,
 
     public async Task<CreateCompanyResult> Handle(CreateCompanyCommand request, CancellationToken cancellationToken)
     {
-        var company = new Domain.Entities.Company
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name.Trim()
-        };
+        var company = Domain.Entities.Company.Create(
+            request.Name.Trim(),
+            request.UserId
+        );
+
         await _companyRepository.AddAsync(company, cancellationToken);
-
-        var userCompanyRole = new Domain.Entities.UserCompanyRole
-        {
-            Id = Guid.NewGuid(),
-            UserId = request.UserId,
-            CompanyId = company.Id,
-            Role = AppRoles.CompanyAdmin
-        };
-        await _userCompanyRoleRepository.AddAsync(userCompanyRole, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         return new CreateCompanyResult(company.Id, company.Name);
     }
 }

@@ -51,12 +51,13 @@ public class GlobalExceptionMiddleware
                 .ToList();
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            return context.Response.WriteAsync(JsonSerializer.Serialize(new ValidationErrorResponse
+            return context.Response.WriteAsJsonAsync(new ValidationErrorResponse
             {
                 StatusCode = (int)statusCode,
                 Message = "Validation failed.",
                 Errors = errors
-            }));
+            });
+
         }
         else
         {
@@ -94,7 +95,7 @@ public class GlobalExceptionMiddleware
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        return context.Response.WriteAsJsonAsync(response);
     }
 }
 

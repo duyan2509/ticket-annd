@@ -12,21 +12,24 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
     private readonly IEmailSender _emailSender;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly IConfiguration _config;
     public ForgotPasswordCommandHandler(
         IUserRepository userRepository,
         IPasswordResetTokenRepository passwordResetTokenRepository,
         IEmailSender emailSender,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IConfiguration config)
     {
         _userRepository = userRepository;
         _passwordResetTokenRepository = passwordResetTokenRepository;
         _emailSender = emailSender;
         _unitOfWork = unitOfWork;
+        _config = config;
     }
 
     public async Task<Unit> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
+        var fe_base_url = _config["FE_URL"];
         var user = await _userRepository.GetLoginUserByEmailAsync(request.Email, cancellationToken);
         if (user == null)
             return Unit.Value; // Don't reveal whether email exists
@@ -43,8 +46,8 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         };
         await _passwordResetTokenRepository.AddAsync(resetToken, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var resetLink = $"https://yourapp.com/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(request.Email)}";
+        
+        var resetLink = $"{fe_base_url}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(request.Email)}";
         var body = $@"<p>You requested a password reset.</p><p><a href=""{resetLink}"">Reset password</a></p><p>This link expires in 1 hour. If you didn't request this, ignore this email.</p>";
         await _emailSender.SendAsync(request.Email, "Reset your password", body, cancellationToken);
 
