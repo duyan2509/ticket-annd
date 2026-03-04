@@ -15,6 +15,13 @@ export interface CompanyOption {
   role: string
 }
 
+export interface CompanyPagedResult {
+  items: CompanyOption[]
+  total: number
+  page: number
+  size: number
+}
+
 export interface InvitationItem {
   id: string
   companyId: string

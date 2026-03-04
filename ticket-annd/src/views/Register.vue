@@ -48,7 +48,8 @@ async function submit() {
   } catch (e) {
     const err = e as AxiosError<{ message?: string; errors?: Record<string, string[]> }>
     const d = err.response?.data
-    error.value = d?.errors ? Object.values(d.errors).flat().join(' ') : (d?.message ?? (e as Error).message ?? 'Register failed')
+    console.log(d)
+    error.value = d?.message ?? "Register fail"
   } finally {
     loading.value = false
   }

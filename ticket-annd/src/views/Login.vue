@@ -30,7 +30,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { login } from '../api/auth'
+import { login, getMe } from '../api/auth'
+import { getCurrentCompany } from '../api/companies'
+import { AppRoles } from '../types/appRoles'
 import type { AxiosError } from 'axios'
 
 const router = useRouter()
@@ -46,7 +48,26 @@ async function submit() {
   try {
     const data = await login(email.value, password.value)
     setTokens(data.accessToken)
-    router.push('/')
+
+    // fetch current user context
+    const me = await getMe()
+
+    if (me.currentRole === AppRoles.EmptyUser) {
+      router.push('/')
+      return
+    }
+
+    if (me.currentRole === AppRoles.SupperAdmin) {
+      router.push('/admin')
+      return
+    }
+
+    try {
+      const company = await getCurrentCompany()
+      router.push(`/${company.slug}`)
+    } catch {
+      router.push('/')
+    }
   } catch (e) {
     const err = e as AxiosError<{ message?: string; errors?: { propertyName: string; errorMessage: string }[] }>
     const data = err.response?.data

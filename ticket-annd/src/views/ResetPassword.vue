@@ -4,22 +4,14 @@
       <h1 class="text-2xl font-bold mb-6 text-gray-800">Reset password</h1>
       <div v-if="error" class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ error }}</div>
       <div v-if="success" class="mb-4 p-3 bg-green-100 text-green-700 rounded">Password reset. Redirecting to login...</div>
-      <div class="mb-4">
-        <label class="block text-gray-700 mb-2">Email</label>
-        <input v-model="email" type="email" required
-          class="w-full px-3 py-2 border border-gray-300 rounded focus:ring focus:ring-blue-500" />
-      </div>
+      <div v-if="email" class="text-blue-700 text-lg">{{ email }}</div>
       <div class="mb-4">
         <label class="block text-gray-700 mb-2">New password</label>
         <input v-model="newPassword" type="password" required minlength="6"
           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring focus:ring-blue-500" />
       </div>
-      <div class="mb-6">
-        <label class="block text-gray-700 mb-2">Token (from email)</label>
-        <input v-model="token" type="text" required
-          class="w-full px-3 py-2 border border-gray-300 rounded focus:ring focus:ring-blue-500" />
-      </div>
-      <button type="submit" :disabled="loading"
+
+      <button type="submit" :disabled="loading || !enable"
         class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50">
         {{ loading ? 'Resetting...' : 'Reset password' }}
       </button>
@@ -44,10 +36,13 @@ const newPassword = ref('')
 const error = ref('')
 const success = ref(false)
 const loading = ref(false)
+const enable = ref(false)
 
 onMounted(() => {
   if (route.query.email) email.value = String(route.query.email)
   if (route.query.token) token.value = String(route.query.token)
+  if(route.query.token && route.query.email)
+    enable.value=true
 })
 
 async function submit() {

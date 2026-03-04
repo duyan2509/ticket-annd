@@ -24,7 +24,10 @@ export async function logout(): Promise<void> {
 }
 
 export async function refresh(): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/refresh')
+  const { data } = await api.post<LoginResponse>('/auth/refresh',
+    {}, 
+    { withCredentials: true }
+  )
   return data
 }
 
@@ -33,6 +36,7 @@ export interface MeResponse {
   email: string
   isActive: boolean
   currentRole: string
+  companyName?: string | null
 }
 
 export async function getMe(): Promise<MeResponse> {

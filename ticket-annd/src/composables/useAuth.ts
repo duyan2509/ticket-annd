@@ -3,6 +3,7 @@ import {
   setAccessToken,
   clearAccessToken,
   getMeCache,
+  userContext,
 } from '../store/authStore'
 import type { UserContext } from '../types/auth'
 
@@ -22,6 +23,10 @@ export function useAuth() {
     }
   }
 
+  function getUserContextRef() {
+    return userContext
+  }
+
   function setTokens(accessToken: string): void {
     setAccessToken(accessToken)
   }
@@ -35,5 +40,6 @@ export function useAuth() {
     getUserContext,
     setTokens,
     clearTokens,
+    getUserContextRef,
   }
 }
