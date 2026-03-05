@@ -1,12 +1,26 @@
-import type { InvitationItem, UserContext } from '../types/auth'
+import api from './axios'
+import type { InvitationItem, InvitationPagedResult, UserContext, CompanyInvitationPagedResult } from '../types/auth'
 import { AppRoles } from '../types/appRoles'
-/** mock */
 
 export async function getInvitations(userContext: UserContext | null): Promise<InvitationItem[]> {
-  const email = userContext?.email ?? ''
-  const mock: InvitationItem[] = [
-    { id: '1', companyId: 'c1', companyName: 'Acme Corp', email, role: AppRoles.Agent, status: 'Pending', expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: '2', companyId: 'c2', companyName: 'Beta Inc', email, role: AppRoles.Customer, status: 'Pending', expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() },
-  ]
-  return mock
+  const { data } = await api.get<InvitationItem[]>('/invitations/me')
+  return data
+}
+
+export async function getCompanyInvitations(page = 1, size = 20): Promise<CompanyInvitationPagedResult> {
+  const { data } = await api.get<CompanyInvitationPagedResult>(`/invitations/company?page=${page}&size=${size}`)
+  return data
+}
+
+export async function acceptInvitation(invitationId: string): Promise<void> {
+  await api.post(`/invitations/${invitationId}/accept`)
+}
+
+export async function rejectInvitation(invitationId: string): Promise<void> {
+  await api.post(`/invitations/${invitationId}/reject`)
+}
+
+export async function createInvitation(email: string, role: string): Promise<{ invitationId: string } | void> {
+  const { data } = await api.post('/invitations', { email, role })
+  return data
 }

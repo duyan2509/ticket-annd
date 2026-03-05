@@ -31,3 +31,25 @@ export interface InvitationItem {
   status: string
   expires: string
 }
+
+export interface InvitationPagedResult {
+  items: InvitationItem[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface CompanyInvitationItem {
+  id: string
+  email: string
+  response_at: string | null
+  status: string
+  expire_at: string
+}
+
+export interface CompanyInvitationPagedResult {
+  items: CompanyInvitationItem[]
+  total: number
+  page: number
+  size: number
+}

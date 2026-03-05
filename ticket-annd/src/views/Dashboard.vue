@@ -15,7 +15,7 @@
           class="px-3 py-1 bg-gray-200 rounded">Next</button>
       </div>
 
-      <InvitationList :invitations="invitations" />
+      <InvitationList :invitations="invitations" @accept="onAccept" @reject="onReject" />
     </main>
   </div>
 </template>
@@ -27,7 +27,7 @@ import { useAuth } from '../composables/useAuth'
 import { getMe, logout as apiLogout, switchRole } from '../api/auth'
 import { getCompanies, getCurrentCompany } from '../api/companies'
 
-import { getInvitations } from '../api/invitations'
+import { getInvitations, acceptInvitation, rejectInvitation } from '../api/invitations'
 import AppHeader from '../components/AppHeader.vue'
 import CreateCompanyForm from '../components/CreateCompanyForm.vue'
 import CompanyList from '../components/CompanyList.vue'
@@ -102,5 +102,24 @@ function nextPage() {
   if (page.value >= totalPages) return
   page.value += 1
   load()
+}
+
+async function onAccept(id: string) {
+  try {
+    await acceptInvitation(id)
+    // refresh invitations
+    invitations.value = await getInvitations(userContext.value)
+  } catch (err) {
+    // ignore/show notification
+  }
+}
+
+async function onReject(id: string) {
+  try {
+    await rejectInvitation(id)
+    invitations.value = await getInvitations(userContext.value)
+  } catch (err) {
+    // ignore/show notification
+  }
 }
 </script>
