@@ -10,4 +10,8 @@ public class Invitation:BaseEntity
     public DateTime Expires { get; set; }
     public InviationStatuses Status { get; set; } = InviationStatuses.Pending;
     public AppRoles Role { get; set; } = AppRoles.Customer;
+    public DateTime? ResponseAt { get; set; }
+    public Guid? UserId { get; set; }
+     public virtual User? User { get; set; }
+
 }

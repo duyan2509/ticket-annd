@@ -9,5 +9,6 @@ public class User : BaseEntity
     public virtual ICollection<UserCompanyRole> UserCompanyRoles { get; set; }
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
     public virtual ICollection<UserAgent> UserAgents { get; set; }
+    public virtual ICollection<Invitation> Invitations { get; set; }
 
 }
