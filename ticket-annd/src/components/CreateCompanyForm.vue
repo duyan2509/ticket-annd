@@ -18,10 +18,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { createCompany } from '../api/companies'
+import { createCompany, getCompanies } from '../api/companies'
+import type { CompanyPagedResult } from '../types/auth'
+import { getMe } from '../api/auth'
+import { useAuth } from '../composables/useAuth'
+import { AppRoles } from '../types/appRoles'
 import type { AxiosError } from 'axios'
 
-const emit = defineEmits<{ (e: 'created'): void }>()
+const emit = defineEmits<{ (e: 'created', paged?: CompanyPagedResult): void }>()
 const name = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -32,6 +36,28 @@ async function submit() {
   try {
     await createCompany(name.value)
     name.value = ''
+
+    const { getUserContext } = useAuth()
+    let ctx = getUserContext()
+    if (!ctx || ctx.role === AppRoles.EmptyUser) {
+      try {
+        await getMe()
+      } catch {
+        // ignore
+      }
+      ctx = getUserContext()
+    }
+
+    if (ctx) {
+      try {
+        const paged = await getCompanies(ctx, 1, 10)
+        emit('created', paged)
+        return
+      } catch {
+        // ignore and fall through
+      }
+    }
+
     emit('created')
   } catch (e) {
     const err = e as AxiosError<{ message?: string }>

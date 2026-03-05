@@ -3,8 +3,8 @@
     <AppHeader />
     <main class="max-w-4xl mx-auto p-6 space-y-6">
       <h1 class="text-xl font-bold text-gray-800">Dashboard</h1>
-      <CreateCompanyForm @created="load" />
-      <CompanyList v-if="userContext && (meResult?.currentRole ?? userContext.role) !== AppRoles.EmptyUser"
+      <CreateCompanyForm @created="onCreated" />
+      <CompanyList
         :companies="companies" :can-switch="(meResult?.currentRole ?? userContext?.role) !== AppRoles.SupperAdmin"
         @switch="onSwitch" />
 
@@ -78,7 +78,16 @@ async function onSwitch(companyId: string) {
   }
 }
 
-// logout handled by AppHeader
+async function onCreated(paged?: { items: any[]; total: number; page: number; size: number }) {
+  page.value = 1
+  if (paged) {
+    companies.value = paged.items
+    total.value = paged.total
+    return
+  }
+  await load()
+}
+
 
 onMounted(load)
 
