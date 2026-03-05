@@ -38,7 +38,7 @@ public class CreateInvitationCommandHandler : IRequestHandler<CreateInvitationCo
     public async Task<CreateInvitationResult> Handle(CreateInvitationCommand request, CancellationToken cancellationToken)
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-
+        
         var existingUser = await _userRepository.GetLoginUserByEmailAsync(normalizedEmail, cancellationToken);
         Guid? userId = existingUser?.Id;
 

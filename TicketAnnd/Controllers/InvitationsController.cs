@@ -32,7 +32,7 @@ public class InvitationsController : ControllerBase
         return Created($"/api/invitations/{result.InvitationId}", result);
     }
 
-    [HttpGet]
+    [HttpGet("me")]
     public async Task<IActionResult> GetByEmail([FromQuery] string? status = null, [FromQuery] string? companyName = null, [FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
     {
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
@@ -44,6 +44,50 @@ public class InvitationsController : ControllerBase
             st = parsed;
 
         var items = await _mediator.Send(new GetInvitationsByEmailQuery(email, st, companyName, page, size), cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("{id:guid}/accept")]
+    public async Task<IActionResult> Accept([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        await _mediator.Send(
+            new RespondInvitationCommand(id, userId, InviationStatuses.Accepted),
+            cancellationToken
+        );
+
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/reject")]
+    public async Task<IActionResult> Reject([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        await _mediator.Send(
+            new RespondInvitationCommand(id, userId, InviationStatuses.Rejected),
+            cancellationToken
+        );
+
+        return NoContent();
+    }
+
+    [HttpGet("company")]
+    [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
+    public async Task<IActionResult> GetByCompany([FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var items = await _mediator.Send(new GetInvitationsByCompanyQuery(companyId, page, size), cancellationToken);
         return Ok(items);
     }
 }

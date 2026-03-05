@@ -18,6 +18,7 @@ public class InvitationConfiguration : IEntityTypeConfiguration<Invitation>
 
         builder.HasIndex(x => new { x.CompanyId, x.Email, x.Status })
             .IsUnique();
+        builder.HasIndex(x => x.Email);
 
         builder.HasOne(x => x.Company)
             .WithMany(c => c.Invitations)

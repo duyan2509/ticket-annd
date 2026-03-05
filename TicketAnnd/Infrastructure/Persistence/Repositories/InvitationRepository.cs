@@ -56,5 +56,59 @@ public class InvitationRepository : IInvitationRepository
             .ToListAsync(cancellationToken);
 
         return items;
+    } 
+    public async Task<bool> PendingExists(string email, Guid companyId)
+    {
+        return await _context.Invitations.AnyAsync(i => 
+            i.Email == email && 
+            i.CompanyId == companyId &&
+            i.Status == InviationStatuses.Pending && 
+            i.Expires<=DateTime.UtcNow);
+    }
+    public async Task<Invitation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Invitations
+            .Include(i => i.Company)
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+    }
+
+    public Task UpdateAsync(Invitation invitation, CancellationToken cancellationToken = default)
+    {
+        _context.Invitations.Update(invitation);
+        return Task.CompletedTask;
+    }
+
+    public async Task<CompanyInvitationPagedResultReadModel> GetByCompanyIdAsync(Guid companyId, int page = 1, int size = 50, CancellationToken cancellationToken = default)
+    {
+        if (page < 1) page = 1;
+        if (size < 1) size = 10;
+
+        var baseQuery = _context.Invitations
+            .AsNoTracking()
+            .Include(i => i.Company)
+            .Where(i => i.CompanyId == companyId);
+
+        var total = await baseQuery.CountAsync(cancellationToken);
+
+        var items = await baseQuery
+            .OrderByDescending(i => i.Expires)
+            .Skip((page - 1) * size)
+            .Take(size)
+            .Select(i => new CompanyInvitationItemReadModel
+            {
+                Email = i.Email,
+                ResponseAt = i.ResponseAt,
+                Status = i.Status.ToString(),
+                ExpireAt = i.Expires
+            })
+            .ToListAsync(cancellationToken);
+
+        return new CompanyInvitationPagedResultReadModel
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            Size = size
+        };
     }
 }

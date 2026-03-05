@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Serilog;
 using TicketAnnd;
 using TicketAnnd.Extensions;
@@ -16,6 +17,8 @@ builder.Services.AddControllers()
     {
         o.JsonSerializerOptions.PropertyNamingPolicy =
             System.Text.Json.JsonNamingPolicy.CamelCase;
+        o.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
     });
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>

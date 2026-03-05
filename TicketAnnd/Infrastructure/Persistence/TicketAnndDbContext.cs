@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TicketAnnd.Domain.Entities;
 
@@ -5,9 +6,11 @@ namespace TicketAnnd.Infrastructure.Persistence;
 
 public class TicketAnndDbContext : DbContext
 {
-    public TicketAnndDbContext(DbContextOptions<TicketAnndDbContext> options) : base(options)
+    public TicketAnndDbContext(DbContextOptions<TicketAnndDbContext> options, IMediator mediator) : base(options)
     {
+        _mediator = mediator;
     }
+    private readonly IMediator _mediator;
 
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketAssign> TicketAssigns => Set<TicketAssign>();
@@ -29,4 +32,22 @@ public class TicketAnndDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TicketAnndDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
+    public override async Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var domainEvents = ChangeTracker
+            .Entries<BaseEntity>()
+            .SelectMany(e => e.Entity.DomainEvents)
+            .ToList();
+
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        return result;
+    }
+
 }

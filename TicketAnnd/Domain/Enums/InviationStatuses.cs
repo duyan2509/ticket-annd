@@ -4,6 +4,6 @@ public enum InviationStatuses
 {
     Pending,
     Accepted,
-    Rejected,
-    Expired
+    Rejected
+    
 }
