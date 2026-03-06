@@ -11,6 +11,7 @@ const routes = [
   { path: '/reset-password', name: 'ResetPassword', component: () => import('../views/ResetPassword.vue'), meta: { guest: true } },
   { path: '/', name: 'Dashboard', component: () => import('../views/Dashboard.vue'), meta: { requiresAuth: true } },
   { path: '/admin', name: 'Admin', component: () => import('../views/Admin.vue'), meta: { requiresAuth: true, role: AppRoles.SupperAdmin } },
+  { path: '/:slug/members', name: 'Members', component: () => import('../views/Members.vue'), meta: { requiresAuth: true } },
   { path: '/:slug', name: 'Company', component: () => import('../views/Company.vue'), meta: { requiresAuth: true } },
 ]
 

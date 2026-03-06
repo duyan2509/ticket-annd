@@ -9,29 +9,131 @@
         <p class="text-sm text-gray-700">Role: {{ company?.role ?? '-' }}</p>
       </div>
 
-      <div class="mt-6">
-        <button @click="goDashboard" class="px-3 py-1 bg-gray-200 rounded">Back to Dashboard</button>
+      <div class="mt-6 flex items-center justify-between">
+        <div>
+          <button @click="goDashboard" class="px-3 py-1 bg-gray-200 rounded">Back to Dashboard</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="onViewInvitations"
+            :class="(!showMembers && !showCategories) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
+          >
+            View Invitations
+          </button>
+          <button
+            @click="onViewMembers"
+            :class="showMembers ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
+          >
+            View Members
+          </button>
+          <button
+            @click="onViewCategories"
+            :class="showCategories ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
+          >
+            View Categories
+          </button>
+        </div>
       </div>
 
-      <div class="mt-6">
+      <div class="mt-6" >
         <h2 class="text-lg font-semibold">Invitations</h2>
         <div class="mt-3 grid grid-cols-1 gap-4">
-          <div>
-            <label class="block text-sm text-gray-700">Invite by email</label>
-            <div class="flex gap-2 mt-2">
-              <input v-model="inviteEmail" placeholder="email@example.com" class="px-3 py-2 border rounded w-full" />
-              <select v-model="inviteRole" class="px-3 py-2 border rounded">
-                <option value="Customer">Customer</option>
-                <option value="Agent">Agent</option>
-              </select>
-              <button @click="onInvite" class="px-3 py-2 bg-blue-600 text-white rounded">Invite</button>
+
+          <template v-if="showCategories">
+            <div class="bg-white rounded shadow p-4">
+              <div class="mb-4">
+                <label class="block text-sm text-gray-700">Add category</label>
+                <div class="flex gap-2 mt-2">
+                  <input v-model="newCategoryName" placeholder="Category name" class="px-3 py-2 border rounded w-full" />
+                  <button @click="onCreateCategory" class="px-3 py-2 bg-blue-600 text-white rounded">Add</button>
+                </div>
+                <p v-if="categoryError" class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="c in categories" :key="c.id" class="hover:bg-gray-50 even:bg-gray-50">
+                      <td class="px-4 py-3 text-sm text-gray-700 truncate">
+                        <template v-if="editingCategoryId === c.id">
+                          <input v-model="editingCategoryName" class="px-2 py-1 border rounded w-full" />
+                          <p v-if="editingError" class="text-sm text-red-500 mt-1">{{ editingError }}</p>
+                        </template>
+                        <template v-else>
+                          {{ c.name }}
+                        </template>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-gray-700">
+                        <template v-if="editingCategoryId === c.id">
+                          <button @click="onSaveEdit(c.id)" class="px-2 py-1 bg-green-600 text-white rounded text-sm mr-2">Save</button>
+                          <button @click="onCancelEdit()" class="px-2 py-1 bg-gray-200 rounded text-sm">Cancel</button>
+                        </template>
+                        <template v-else>
+                          <button @click="onStartEdit(c.id, c.name)" class="px-2 py-1 bg-yellow-400 text-white rounded text-sm mr-2">Edit</button>
+                          <button @click="onDeleteCategory(c.id)" class="px-2 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
+                        </template>
+                      </td>
+                    </tr>
+                    <tr v-if="categories.length === 0">
+                      <td colspan="2" class="px-4 py-6 text-center text-sm text-gray-500">No categories found.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <p v-if="inviteError" class="text-sm text-red-500 mt-1">{{ inviteError }}</p>
-          </div>
+          </template>
+          <template v-else-if="showMembers">
+            <div v-if="loadingMembers" class="text-sm text-gray-600">Loading members...</div>
+            <div v-else>
+              <div v-if="loadingMembers" class="text-sm text-gray-600">Loading members...</div>
+              <div v-else>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                      <tr v-for="m in members" :key="m.userId" class="hover:bg-gray-50 even:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-700 truncate">{{ m.email }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ m.role }}</span>
+                        </td>
+                      </tr>
+                      <tr v-if="members.length === 0">
+                        <td colspan="2" class="px-4 py-6 text-center text-sm text-gray-500">No members found.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div>
+              <label class="block text-sm text-gray-700">Invite by email</label>
+              <div class="flex gap-2 mt-2">
+                <input v-model="inviteEmail" placeholder="email@example.com" class="px-3 py-2 border rounded w-full" />
+                <select v-model="inviteRole" class="px-3 py-2 border rounded">
+                  <option value="Customer">Customer</option>
+                  <option value="Agent">Agent</option>
+                </select>
+                <button @click="onInvite" class="px-3 py-2 bg-blue-600 text-white rounded">Invite</button>
+              </div>
+              <p v-if="inviteError" class="text-sm text-red-500 mt-1">{{ inviteError }}</p>
+            </div>
+            <InvitationList :invitations="invitations" :showActions="false" />
+          </template>
 
-          <InvitationList :invitations="invitations" :showActions="false" />
-
-          <div v-if="companyTotal > companySize" class="flex items-center gap-3">
+          <div v-if="!showCategories && companyTotal > companySize" class="flex items-center gap-3">
             <button @click="prevCompanyPage" :disabled="companyPage <= 1"
               class="px-3 py-1 bg-gray-200 rounded">Prev</button>
             <span class="text-sm text-gray-600">Page {{ companyPage }} / {{ Math.max(1, Math.ceil(companyTotal /
@@ -52,7 +154,9 @@ import { useAuth } from '../composables/useAuth'
 import { getMe } from '../api/auth'
 import { getCurrentCompany } from '../api/companies'
 import { getCompanyInvitations, createInvitation } from '../api/invitations'
-import type { CompanyInvitationItem } from '../types/auth'
+import { getCompanyMembers } from '../api/members'
+import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories'
+import type { CompanyInvitationItem, CategoryItem } from '../types/auth'
 import AppHeader from '../components/AppHeader.vue'
 import InvitationList from '../components/InvitationList.vue'
 
@@ -61,6 +165,17 @@ const router = useRouter()
 const { getUserContextRef } = useAuth()
 const company = ref<{ id: string; name: string; slug: string; role?: string } | null>(null)
 const invitations = ref<CompanyInvitationItem[]>([])
+const members = ref<{ userId: string; email: string; role: string }[]>([])
+const showMembers = ref(false)
+const loadingMembers = ref(false)
+const showCategories = ref(false)
+const categories = ref<CategoryItem[]>([])
+const loadingCategories = ref(false)
+const newCategoryName = ref('')
+const categoryError = ref('')
+const editingCategoryId = ref<string | null>(null)
+const editingCategoryName = ref('')
+const editingError = ref('')
 const inviteEmail = ref('')
 const inviteRole = ref('Customer')
 const inviteError = ref('')
@@ -103,13 +218,19 @@ async function onInvite() {
     inviteError.value = 'Invalid email'
     return
   }
-  try {
+    try {
     await createInvitation(inviteEmail.value, inviteRole.value)
     inviteEmail.value = ''
     // refresh
-    const paged = await getCompanyInvitations(companyPage.value, companySize.value)
-    invitations.value = paged.items
-    companyTotal.value = paged.total
+    if (showMembers.value) {
+      const paged = await getCompanyMembers(companyPage.value, companySize.value)
+      members.value = paged.items
+      companyTotal.value = paged.total
+    } else {
+      const paged = await getCompanyInvitations(companyPage.value, companySize.value)
+      invitations.value = paged.items
+      companyTotal.value = paged.total
+    }
   } catch (err: unknown) {
     let message = 'Failed to send invitation'
     const axiosErr = err as any
@@ -139,18 +260,147 @@ async function onInvite() {
 async function prevCompanyPage() {
   if (companyPage.value <= 1) return
   companyPage.value -= 1
-  const paged = await getCompanyInvitations(companyPage.value, companySize.value)
-  invitations.value = paged.items
-  companyTotal.value = paged.total
+  if (showMembers.value) {
+    const paged = await getCompanyMembers(companyPage.value, companySize.value)
+    members.value = paged.items
+    companyTotal.value = paged.total
+  } else {
+    const paged = await getCompanyInvitations(companyPage.value, companySize.value)
+    invitations.value = paged.items
+    companyTotal.value = paged.total
+  }
 }
 
 async function nextCompanyPage() {
   const totalPages = Math.max(1, Math.ceil(companyTotal.value / companySize.value))
   if (companyPage.value >= totalPages) return
   companyPage.value += 1
-  const paged = await getCompanyInvitations(companyPage.value, companySize.value)
-  invitations.value = paged.items
-  companyTotal.value = paged.total
+  if (showMembers.value) {
+    const paged = await getCompanyMembers(companyPage.value, companySize.value)
+    members.value = paged.items
+    companyTotal.value = paged.total
+  } else {
+    const paged = await getCompanyInvitations(companyPage.value, companySize.value)
+    invitations.value = paged.items
+    companyTotal.value = paged.total
+  }
+}
+
+async function onViewMembers() {
+  showCategories.value = false
+  showMembers.value = !showMembers.value
+  if (!showMembers.value) return
+  loadingMembers.value = true
+  try {
+    const paged = await getCompanyMembers(companyPage.value, companySize.value)
+    members.value = paged.items
+    companyTotal.value = paged.total
+  } catch (err) {
+    members.value = []
+  } finally {
+    loadingMembers.value = false
+  }
+}
+
+async function onViewInvitations() {
+  showMembers.value = false
+  showCategories.value = false
+  // load invitations for current page
+  try {
+    const paged = await getCompanyInvitations(companyPage.value, companySize.value)
+    invitations.value = paged.items
+    companyTotal.value = paged.total
+  } catch {
+    invitations.value = []
+  }
+}
+
+async function onViewCategories() {
+  showMembers.value = false
+  showCategories.value = !showCategories.value
+  if (!showCategories.value) return
+  loadingCategories.value = true
+  try {
+    const data = await getCategories()
+    categories.value = data
+  } catch (err) {
+    categories.value = []
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+async function onCreateCategory() {
+  categoryError.value = ''
+  if (!newCategoryName.value || newCategoryName.value.trim() === '') {
+    categoryError.value = 'Name is required'
+    return
+  }
+  try {
+    await createCategory(newCategoryName.value.trim())
+    newCategoryName.value = ''
+    // reload
+    const data = await getCategories()
+    categories.value = data
+  } catch (err: unknown) {
+    const axiosErr = err as any
+    if (axiosErr?.response) {
+      const status = axiosErr.response.status
+      const data = axiosErr.response.data
+      if (status === 403) categoryError.value = data?.message ?? 'Forbidden'
+      else if (status === 409) categoryError.value = data?.message ?? 'Conflict'
+      else categoryError.value = data?.message ?? axiosErr.message ?? 'Failed to create category'
+    } else if (err instanceof Error) categoryError.value = err.message
+  }
+}
+
+function onStartEdit(id: string, name: string) {
+  editingCategoryId.value = id
+  editingCategoryName.value = name
+  editingError.value = ''
+}
+
+function onCancelEdit() {
+  editingCategoryId.value = null
+  editingCategoryName.value = ''
+  editingError.value = ''
+}
+
+async function onSaveEdit(id: string) {
+  editingError.value = ''
+  if (!editingCategoryName.value || editingCategoryName.value.trim() === '') {
+    editingError.value = 'Name is required'
+    return
+  }
+  try {
+    await updateCategory(id, editingCategoryName.value.trim())
+    editingCategoryId.value = null
+    editingCategoryName.value = ''
+    const data = await getCategories()
+    categories.value = data
+  } catch (err: unknown) {
+    const axiosErr = err as any
+    if (axiosErr?.response) {
+      const status = axiosErr.response.status
+      const data = axiosErr.response.data
+      if (status === 403) editingError.value = data?.message ?? 'Forbidden'
+      else if (status === 409) editingError.value = data?.message ?? 'Conflict'
+      else editingError.value = data?.message ?? axiosErr.message ?? 'Failed to update category'
+    } else if (err instanceof Error) editingError.value = err.message
+  }
+}
+
+async function onDeleteCategory(id: string) {
+  if (!confirm('Delete this category?')) return
+  try {
+    await deleteCategory(id)
+    const data = await getCategories()
+    categories.value = data
+  } catch (err: unknown) {
+    const axiosErr = err as any
+    const msg = axiosErr?.response?.data?.message ?? axiosErr?.message ?? 'Failed to delete category'
+    alert(msg)
+  }
 }
 
 onMounted(load)

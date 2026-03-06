@@ -53,3 +53,22 @@ export interface CompanyInvitationPagedResult {
   page: number
   size: number
 }
+
+export interface MemberItem {
+  userId: string
+  email: string
+  role: string
+}
+
+export interface MemberPagedResult {
+  items: MemberItem[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface CategoryItem {
+  id: string
+  name: string
+}
+
