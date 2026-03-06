@@ -14,37 +14,39 @@
           <button @click="goDashboard" class="px-3 py-1 bg-gray-200 rounded">Back to Dashboard</button>
         </div>
         <div class="flex items-center gap-2">
-          <button
-            @click="onViewInvitations"
-            :class="(!showMembers && !showCategories) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
-          >
+          <button @click="onViewInvitations"
+            :class="(!showMembers && !showCategories && !showSla) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View Invitations
           </button>
-          <button
-            @click="onViewMembers"
-            :class="showMembers ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
-          >
+          <button @click="onViewMembers"
+            :class="showMembers ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View Members
           </button>
-          <button
-            @click="onViewCategories"
-            :class="showCategories ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'"
-          >
+          <button @click="onViewCategories"
+            :class="showCategories ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View Categories
+          </button>
+          <button @click="onViewSla"
+            :class="showSla ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
+            View SLA
           </button>
         </div>
       </div>
 
-      <div class="mt-6" >
-        <h2 class="text-lg font-semibold">Invitations</h2>
-        <div class="mt-3 grid grid-cols-1 gap-4">
 
-          <template v-if="showCategories">
+      <div class="mt-6">
+        <div class="mt-3 grid grid-cols-1 gap-4">
+          <template v-if="showSla">
+            <SlaContent />
+          </template>
+
+          <template v-else-if="showCategories">
             <div class="bg-white rounded shadow p-4">
               <div class="mb-4">
                 <label class="block text-sm text-gray-700">Add category</label>
                 <div class="flex gap-2 mt-2">
-                  <input v-model="newCategoryName" placeholder="Category name" class="px-3 py-2 border rounded w-full" />
+                  <input v-model="newCategoryName" placeholder="Category name"
+                    class="px-3 py-2 border rounded w-full" />
                   <button @click="onCreateCategory" class="px-3 py-2 bg-blue-600 text-white rounded">Add</button>
                 </div>
                 <p v-if="categoryError" class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
@@ -54,8 +56,10 @@
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name
+                      </th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-100">
@@ -71,12 +75,15 @@
                       </td>
                       <td class="px-4 py-3 text-sm text-gray-700">
                         <template v-if="editingCategoryId === c.id">
-                          <button @click="onSaveEdit(c.id)" class="px-2 py-1 bg-green-600 text-white rounded text-sm mr-2">Save</button>
+                          <button @click="onSaveEdit(c.id)"
+                            class="px-2 py-1 bg-green-600 text-white rounded text-sm mr-2">Save</button>
                           <button @click="onCancelEdit()" class="px-2 py-1 bg-gray-200 rounded text-sm">Cancel</button>
                         </template>
                         <template v-else>
-                          <button @click="onStartEdit(c.id, c.name)" class="px-2 py-1 bg-yellow-400 text-white rounded text-sm mr-2">Edit</button>
-                          <button @click="onDeleteCategory(c.id)" class="px-2 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
+                          <button @click="onStartEdit(c.id, c.name)"
+                            class="px-2 py-1 bg-yellow-400 text-white rounded text-sm mr-2">Edit</button>
+                          <button @click="onDeleteCategory(c.id)"
+                            class="px-2 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
                         </template>
                       </td>
                     </tr>
@@ -97,15 +104,19 @@
                   <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                       <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
+                        </th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role
+                        </th>
                       </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
                       <tr v-for="m in members" :key="m.userId" class="hover:bg-gray-50 even:bg-gray-50">
                         <td class="px-4 py-3 text-sm text-gray-700 truncate">{{ m.email }}</td>
                         <td class="px-4 py-3 text-sm text-gray-700">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ m.role }}</span>
+                          <span
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{
+                            m.role }}</span>
                         </td>
                       </tr>
                       <tr v-if="members.length === 0">
@@ -159,6 +170,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '.
 import type { CompanyInvitationItem, CategoryItem } from '../types/auth'
 import AppHeader from '../components/AppHeader.vue'
 import InvitationList from '../components/InvitationList.vue'
+import SlaContent from '../components/SlaContent.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -169,6 +181,7 @@ const members = ref<{ userId: string; email: string; role: string }[]>([])
 const showMembers = ref(false)
 const loadingMembers = ref(false)
 const showCategories = ref(false)
+const showSla = ref(false)
 const categories = ref<CategoryItem[]>([])
 const loadingCategories = ref(false)
 const newCategoryName = ref('')
@@ -218,7 +231,7 @@ async function onInvite() {
     inviteError.value = 'Invalid email'
     return
   }
-    try {
+  try {
     await createInvitation(inviteEmail.value, inviteRole.value)
     inviteEmail.value = ''
     // refresh
@@ -288,6 +301,7 @@ async function nextCompanyPage() {
 
 async function onViewMembers() {
   showCategories.value = false
+  showSla.value = false
   showMembers.value = !showMembers.value
   if (!showMembers.value) return
   loadingMembers.value = true
@@ -305,7 +319,7 @@ async function onViewMembers() {
 async function onViewInvitations() {
   showMembers.value = false
   showCategories.value = false
-  // load invitations for current page
+  showSla.value = false
   try {
     const paged = await getCompanyInvitations(companyPage.value, companySize.value)
     invitations.value = paged.items
@@ -317,6 +331,7 @@ async function onViewInvitations() {
 
 async function onViewCategories() {
   showMembers.value = false
+  showSla.value = false
   showCategories.value = !showCategories.value
   if (!showCategories.value) return
   loadingCategories.value = true
@@ -330,6 +345,12 @@ async function onViewCategories() {
   }
 }
 
+function onViewSla() {
+  showMembers.value = false
+  showCategories.value = false
+  showSla.value = !showSla.value
+}
+
 async function onCreateCategory() {
   categoryError.value = ''
   if (!newCategoryName.value || newCategoryName.value.trim() === '') {
@@ -339,7 +360,6 @@ async function onCreateCategory() {
   try {
     await createCategory(newCategoryName.value.trim())
     newCategoryName.value = ''
-    // reload
     const data = await getCategories()
     categories.value = data
   } catch (err: unknown) {

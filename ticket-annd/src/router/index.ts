@@ -12,6 +12,7 @@ const routes = [
   { path: '/', name: 'Dashboard', component: () => import('../views/Dashboard.vue'), meta: { requiresAuth: true } },
   { path: '/admin', name: 'Admin', component: () => import('../views/Admin.vue'), meta: { requiresAuth: true, role: AppRoles.SupperAdmin } },
   { path: '/:slug/members', name: 'Members', component: () => import('../views/Members.vue'), meta: { requiresAuth: true } },
+  { path: '/:slug/sla', name: 'Sla', component: () => import('../views/Sla.vue'), meta: { requiresAuth: true } },
   { path: '/:slug', name: 'Company', component: () => import('../views/Company.vue'), meta: { requiresAuth: true } },
 ]
 
