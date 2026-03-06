@@ -56,6 +56,25 @@ public class CompaniesController : ControllerBase
 
         return Ok(new { id = result.Id, name = result.Name, slug = result.Slug, role });
     }
+
+    [HttpGet("members")]
+    [Authorize]
+    public async Task<IActionResult> GetMembers([FromQuery] int page = 1, [FromQuery] int size = 10, CancellationToken cancellationToken = default)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var result = await _mediator.Send(new GetCompanyMembersQuery(companyId, userId, page, size), cancellationToken);
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
     
 }
 

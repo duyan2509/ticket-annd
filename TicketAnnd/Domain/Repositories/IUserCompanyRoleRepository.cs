@@ -9,4 +9,5 @@ public interface IUserCompanyRoleRepository
     Task<UserCompanyRoleReadModel?> GetFirstByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<UserCompanyRoleReadModel?> GetByUserIdAndCompanyIdAsync(Guid userId, Guid companyId, CancellationToken cancellationToken = default);
     Task<CompanyPagedResultReadModel> GetCompanyOptionsPagedByUserIdAsync(Guid userId, int page  = 1, int pageSize = 10, CancellationToken cancellationToken = default);
+    Task<MemberPagedResultReadModel> GetMembersByCompanyIdAsync(Guid companyId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default);
 }

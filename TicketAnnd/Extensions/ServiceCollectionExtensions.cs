@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using TicketAnnd.Application.Behaviors;
 using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
@@ -24,6 +25,14 @@ public static class ServiceCollectionExtensions
     {
         services.AddPostgres(configuration);
         services.AddMongo(configuration);
+        var redisConn = configuration.GetSection("Redis").GetValue<string>("Connection");
+        if (!string.IsNullOrWhiteSpace(redisConn))
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConn;
+            });
+        }
         services.AddMapper();
         services.AddCqrs();
         services.AddAuth(configuration);
@@ -63,6 +72,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IUserCompanyRoleRepository, UserCompanyRoleRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

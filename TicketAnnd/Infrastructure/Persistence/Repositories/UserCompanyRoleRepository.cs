@@ -119,4 +119,38 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
             Size = pageSize,
         };
     }
+
+    public async Task<MemberPagedResultReadModel> GetMembersByCompanyIdAsync(Guid companyId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var baseQuery = _context.UserCompanyRoles.AsNoTracking().Where(x => x.CompanyId == companyId);
+        var total = await baseQuery.CountAsync(cancellationToken);
+
+        var items = await baseQuery
+            .Join(
+                _context.Set<User>(),
+                ucr => ucr.UserId,
+                u => u.Id,
+                (ucr, u) => new { ucr, u })
+            .OrderBy(x => x.u.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new MemberPagedItemReadModel
+            {
+                UserId = x.u.Id,
+                Email = x.u.Email,
+                Role = x.ucr.Role.ToString()
+            })
+            .ToListAsync(cancellationToken);
+
+        return new MemberPagedResultReadModel
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            Size = pageSize,
+        };
+    }
 }
