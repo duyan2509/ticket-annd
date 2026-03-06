@@ -73,6 +73,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ISlaPolicyRepository, SlaPolicyRepository>();
+        services.AddScoped<ISlaRuleRepository, SlaRuleRepository>();
         services.AddScoped<IUserCompanyRoleRepository, UserCompanyRoleRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

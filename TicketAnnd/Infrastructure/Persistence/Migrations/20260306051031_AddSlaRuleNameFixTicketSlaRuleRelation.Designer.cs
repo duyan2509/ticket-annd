@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TicketAnnd.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306051031_AddSlaRuleNameFixTicketSlaRuleRelation")]
+    partial class AddSlaRuleNameFixTicketSlaRuleRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -332,8 +335,7 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SlaPolicyId", "Name")
-                        .IsUnique();
+                    b.HasIndex("SlaPolicyId", "Name");
 
                     b.ToTable("sla_rules", (string)null);
                 });

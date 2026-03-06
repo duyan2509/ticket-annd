@@ -11,11 +11,18 @@ public class SlaRuleConfiguration : IEntityTypeConfiguration<SlaRule>
         builder.ToTable("sla_rules");
 
         builder.HasKey(x => x.Id);
-
+        builder.Property(x => x.Name).IsRequired();
+        builder.Property(x=>x.FirstResponseMinutes).IsRequired();
+        builder.Property(x=>x.ResolutionMinutes).IsRequired();
         builder.HasOne(x => x.SlaPolicy)
             .WithMany()
             .HasForeignKey(x => x.SlaPolicyId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(x => new
+        {
+            x.SlaPolicyId,
+            x.Name
+        }).IsUnique();
     }
 }
 

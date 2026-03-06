@@ -19,8 +19,8 @@ public class Ticket:BaseEntity
     public virtual TicketAssign TicketAssign { get; set; }
     public TicketStatuses Status { get; set; }
     public virtual ICollection<TicketPick> TicketPicks { get; set; }
-    public Guid SlaPolicyId  { get; set; }
-    public virtual SlaPolicy SlaPolicy { get; set; }
+    public Guid SlaRuleId { get; set; }
+    public virtual SlaRule SlaRule { get; set; }
     public DateTime FirstResponseDueAt {get;set;}
     public DateTime ResolutionDueAt {get;set;}
     public DateTime FirstResponseAt {get;set;}

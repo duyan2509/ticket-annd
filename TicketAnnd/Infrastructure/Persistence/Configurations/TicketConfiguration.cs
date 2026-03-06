@@ -46,9 +46,9 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(t => t.SlaPolicy)
+        builder.HasOne(t => t.SlaRule)
             .WithMany()
-            .HasForeignKey(t => t.SlaPolicyId)
+            .HasForeignKey(t => t.SlaRuleId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(t => t.TicketAssign)

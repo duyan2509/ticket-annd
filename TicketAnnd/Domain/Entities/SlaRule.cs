@@ -6,4 +6,5 @@ public class SlaRule:BaseEntity
     public virtual SlaPolicy SlaPolicy { get; set; }
     public int FirstResponseMinutes { get; set; }
     public int ResolutionMinutes  { get; set; }
+    public string Name { get; set; }
 }
