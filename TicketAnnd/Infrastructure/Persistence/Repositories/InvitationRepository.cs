@@ -111,4 +111,10 @@ public class InvitationRepository : IInvitationRepository
             Size = size
         };
     }
+
+    public async Task<Invitation> GetByEmailAndCompanyIdAsync(string normalizedEmail, Guid companyId, CancellationToken cancellationToken)
+    {
+        return await _context.Invitations
+            .FirstOrDefaultAsync(i => i.Email == normalizedEmail && i.CompanyId == companyId, cancellationToken);
+    }
 }

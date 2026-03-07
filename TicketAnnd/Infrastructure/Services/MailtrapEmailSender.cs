@@ -9,10 +9,11 @@ namespace TicketAnnd.Infrastructure.Services;
 public class MailtrapEmailSender : IEmailSender
 {
     private readonly IConfiguration _config;
-
-    public MailtrapEmailSender(IConfiguration config)
+    private ILogger<MailtrapEmailSender>? _logger;
+    public MailtrapEmailSender(IConfiguration config, ILogger<MailtrapEmailSender>? logger = null)
     {
         _config = config;
+        _logger = logger;
     }
 
     public async Task SendAsync(string to, string subject, string bodyHtml, CancellationToken cancellationToken = default)
@@ -33,9 +34,10 @@ public class MailtrapEmailSender : IEmailSender
         message.Body = new TextPart("html") { Text = bodyHtml };
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(host, port, SecureSocketOptions.StartTlsWhenAvailable, cancellationToken);
-        await client.AuthenticateAsync(user, password, cancellationToken);
+        await client.ConnectAsync(host, port, SecureSocketOptions.StartTls, cancellationToken);
+        await client.AuthenticateAsync(user, password, cancellationToken);  
         await client.SendAsync(message, cancellationToken);
+        _logger?.LogInformation("Email sent successfully.");
         await client.DisconnectAsync(true, cancellationToken);
     }
 }

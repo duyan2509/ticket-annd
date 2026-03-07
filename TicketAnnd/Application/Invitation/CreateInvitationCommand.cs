@@ -38,10 +38,22 @@ public class CreateInvitationCommandHandler : IRequestHandler<CreateInvitationCo
     public async Task<CreateInvitationResult> Handle(CreateInvitationCommand request, CancellationToken cancellationToken)
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-        
+        var company = await _companyRepository.GetReadModelByIdAsync(request.CompanyId, cancellationToken);
+        var companyName = company?.Name ?? "your company";
         var existingUser = await _userRepository.GetLoginUserByEmailAsync(normalizedEmail, cancellationToken);
         Guid? userId = existingUser?.Id;
-
+        var ivtn = await _invitationRepository.GetByEmailAndCompanyIdAsync(normalizedEmail, request.CompanyId, cancellationToken);
+        if(ivtn !=null && ivtn.Status !=InviationStatuses.Accepted)
+        {
+            ivtn.Expires = DateTime.UtcNow.AddDays(InvitationExpireDay);
+            ivtn.Role = request.Role;
+            ivtn.UserId = userId;
+            ivtn.Status = InviationStatuses.Pending;
+            await _invitationRepository.UpdateAsync(ivtn);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _mediator.Publish(new InvitationCreatedNotification(normalizedEmail, companyName, request.Role.ToString(), InvitationExpireDay), cancellationToken);
+            return new CreateInvitationResult(ivtn.Id);
+        }
         var invitation = new Domain.Entities.Invitation
         {
             Id = Guid.NewGuid(),
@@ -55,19 +67,7 @@ public class CreateInvitationCommandHandler : IRequestHandler<CreateInvitationCo
 
         await _invitationRepository.AddAsync(invitation, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var company = await _companyRepository.GetReadModelByIdAsync(request.CompanyId, cancellationToken);
-        var companyName = company?.Name ?? "your company";
-
-
-        try
-        {
-            await _mediator.Publish(new InvitationCreatedNotification(normalizedEmail, companyName, request.Role.ToString(), InvitationExpireDay), cancellationToken);
-        }
-        catch
-        {
-            // ?? idk what to do when publish failed ??
-        }
+        await _mediator.Publish(new InvitationCreatedNotification(normalizedEmail, companyName, request.Role.ToString(), InvitationExpireDay), cancellationToken);
 
         return new CreateInvitationResult(invitation.Id);
     }

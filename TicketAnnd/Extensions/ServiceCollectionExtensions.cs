@@ -16,7 +16,8 @@ using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Infrastructure.Persistence;
 using TicketAnnd.Infrastructure.Persistence.Repositories;
 using TicketAnnd.Infrastructure.Services;
-
+using Hangfire;
+using Hangfire.PostgreSql;
 namespace TicketAnnd.Extensions;
 
 public static class ServiceCollectionExtensions
@@ -25,6 +26,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddPostgres(configuration);
         services.AddMongo(configuration);
+        services.AddHangfireJobs(configuration);
         var redisConn = configuration.GetSection("Redis").GetValue<string>("Connection");
         if (!string.IsNullOrWhiteSpace(redisConn))
         {
@@ -33,6 +35,7 @@ public static class ServiceCollectionExtensions
                 options.Configuration = redisConn;
             });
         }
+
         services.AddMapper();
         services.AddCqrs();
         services.AddAuth(configuration);
@@ -67,12 +70,25 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+    public static IServiceCollection AddHangfireJobs(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services.AddHangfire(config =>
+            config.UsePostgreSqlStorage(connectionString));
+
+        services.AddHangfireServer();
+
+        return services;
+    }
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IAgentRepository, AgentRepository>();
+        services.AddScoped<IUserAgentRepository, UserAgentRepository>();
         services.AddScoped<ISlaPolicyRepository, SlaPolicyRepository>();
         services.AddScoped<ISlaRuleRepository, SlaRuleRepository>();
         services.AddScoped<IUserCompanyRoleRepository, UserCompanyRoleRepository>();

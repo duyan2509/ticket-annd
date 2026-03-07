@@ -12,4 +12,5 @@ public interface IInvitationRepository
     Task<Invitation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task UpdateAsync(Invitation invitation, CancellationToken cancellationToken = default);
     Task<CompanyInvitationPagedResultReadModel> GetByCompanyIdAsync(Guid companyId, int page = 1, int size = 50, CancellationToken cancellationToken = default);
+    Task<Invitation> GetByEmailAndCompanyIdAsync(string normalizedEmail, Guid companyId, CancellationToken cancellationToken);
 }
