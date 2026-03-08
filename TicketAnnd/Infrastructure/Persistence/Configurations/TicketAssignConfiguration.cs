@@ -12,9 +12,9 @@ public class TicketAssignConfiguration : IEntityTypeConfiguration<TicketAssign>
 
         builder.HasKey(x => x.Id);
 
-        builder.HasOne(x => x.Agent)
+        builder.HasOne(x => x.Team)
             .WithMany()
-            .HasForeignKey(x => x.AgentId)
+            .HasForeignKey(x => x.TeamId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Ticket)
             .WithMany()

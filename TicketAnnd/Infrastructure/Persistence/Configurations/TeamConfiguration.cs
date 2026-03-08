@@ -4,20 +4,20 @@ using TicketAnnd.Domain.Entities;
 
 namespace TicketAnnd.Infrastructure.Persistence.Configurations;
 
-public class AgentConfiguration : IEntityTypeConfiguration<Agent>
+public class TeamConfiguration : IEntityTypeConfiguration<Team>
 {
-    public void Configure(EntityTypeBuilder<Agent> builder)
+    public void Configure(EntityTypeBuilder<Team> builder)
     {
-        builder.ToTable("agents");
+        builder.ToTable("teams");
 
         builder.HasKey(a => a.Id);
 
         builder.Property(a => a.Name)
             .IsRequired();
 
-        builder.HasOne(a => a.Company)
+        builder.HasOne(t => t.Company)
             .WithMany()
-            .HasForeignKey(a => a.CompanyId)
+            .HasForeignKey(t => t.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -9,8 +9,8 @@ public class Ticket:BaseEntity
     public string TicketCode { get; set; }
     public Guid CustomerId { get; set; }
     public virtual User Customer { get; set; }
-    public Guid? AgentId { get; set; }
-    public virtual Agent? Agent { get; set; }
+    public Guid? TeamId { get; set; }
+    public virtual Team? Team { get; set; }
     public Guid CategoryId { get; set; }
     public virtual Categrory category { get; set; }
     public string Subject { get; set; }

@@ -36,9 +36,9 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(t => t.Agent)
+        builder.HasOne(t => t.Team)
             .WithMany()
-            .HasForeignKey(t => t.AgentId)
+            .HasForeignKey(t => t.TeamId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(t => t.category)

@@ -1,10 +1,10 @@
 namespace TicketAnnd.Domain.Entities;
 
-public class UserAgent : BaseEntity
+public class TeamMember : BaseEntity
 {
     public Guid UserId { get; set; }
     public virtual User User { get; set; }
 
-    public Guid AgentId { get; set; }
-    public virtual Agent Agent { get; set; }
+    public Guid TeamId { get; set; }
+    public virtual Team Team { get; set; }
 }

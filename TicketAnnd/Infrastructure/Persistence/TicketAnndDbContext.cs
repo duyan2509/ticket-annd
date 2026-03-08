@@ -16,13 +16,13 @@ public class TicketAnndDbContext : DbContext
     public DbSet<TicketAssign> TicketAssigns => Set<TicketAssign>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<Agent> Agents => Set<Agent>();
+    public DbSet<Team> Teams => Set<Team>();
     public DbSet<Categrory> Categories => Set<Categrory>();
     public DbSet<TicketPick> TicketPicks => Set<TicketPick>();
     public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
     public DbSet<SlaRule> SlaRules => Set<SlaRule>();
     public DbSet<UserCompanyRole> UserCompanyRoles => Set<UserCompanyRole>();
-    public DbSet<UserAgent> UserAgents => Set<UserAgent>();
+    public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();

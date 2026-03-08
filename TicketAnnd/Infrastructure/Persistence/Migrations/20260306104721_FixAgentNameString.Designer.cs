@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TicketAnnd.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306104721_FixAgentNameString")]
+    partial class FixAgentNameString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,38 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("TicketAnnd.Domain.Entities.Agent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("agents", (string)null);
+                });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Categrory", b =>
                 {
@@ -307,76 +342,13 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.ToTable("sla_rules", (string)null);
                 });
 
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.Team", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.ToTable("teams", (string)null);
-                });
-
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.TeamMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("UserId", "TeamId")
-                        .IsUnique();
-
-                    b.ToTable("team_members", (string)null);
-                });
-
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Ticket", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AgentId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Body")
@@ -430,9 +402,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("TeamId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("TicketAssignId")
                         .HasColumnType("uuid");
 
@@ -446,13 +415,13 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AgentId");
+
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("SlaRuleId");
-
-                    b.HasIndex("TeamId");
 
                     b.HasIndex("TicketAssignId")
                         .IsUnique();
@@ -469,6 +438,9 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -478,9 +450,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("TicketId")
                         .HasColumnType("uuid");
 
@@ -489,7 +458,7 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("AgentId");
 
                     b.HasIndex("TicketId");
 
@@ -500,6 +469,9 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AgentId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -514,9 +486,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("TicketId")
                         .HasColumnType("uuid");
 
@@ -525,7 +494,7 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("AgentId");
 
                     b.HasIndex("TicketId");
 
@@ -574,6 +543,40 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("TicketAnnd.Domain.Entities.UserAgent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentId");
+
+                    b.HasIndex("UserId", "AgentId")
+                        .IsUnique();
+
+                    b.ToTable("user_agents", (string)null);
+                });
+
             modelBuilder.Entity("TicketAnnd.Domain.Entities.UserCompanyRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -609,6 +612,17 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("user_company_roles", (string)null);
+                });
+
+            modelBuilder.Entity("TicketAnnd.Domain.Entities.Agent", b =>
+                {
+                    b.HasOne("TicketAnnd.Domain.Entities.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Categrory", b =>
@@ -694,38 +708,13 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Navigation("SlaPolicy");
                 });
 
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.Team", b =>
-                {
-                    b.HasOne("TicketAnnd.Domain.Entities.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.TeamMember", b =>
-                {
-                    b.HasOne("TicketAnnd.Domain.Entities.Team", "Team")
-                        .WithMany("TeamMembers")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TicketAnnd.Domain.Entities.User", "User")
-                        .WithMany("TeamMembers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Ticket", b =>
                 {
+                    b.HasOne("TicketAnnd.Domain.Entities.Agent", "Agent")
+                        .WithMany()
+                        .HasForeignKey("AgentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("TicketAnnd.Domain.Entities.Categrory", "category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
@@ -750,23 +739,18 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TicketAnnd.Domain.Entities.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("TicketAnnd.Domain.Entities.TicketAssign", "TicketAssign")
                         .WithOne()
                         .HasForeignKey("TicketAnnd.Domain.Entities.Ticket", "TicketAssignId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Agent");
 
                     b.Navigation("Company");
 
                     b.Navigation("Customer");
 
                     b.Navigation("SlaRule");
-
-                    b.Navigation("Team");
 
                     b.Navigation("TicketAssign");
 
@@ -775,9 +759,9 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.TicketAssign", b =>
                 {
-                    b.HasOne("TicketAnnd.Domain.Entities.Team", "Team")
+                    b.HasOne("TicketAnnd.Domain.Entities.Agent", "Agent")
                         .WithMany()
-                        .HasForeignKey("TeamId")
+                        .HasForeignKey("AgentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -787,16 +771,16 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Team");
+                    b.Navigation("Agent");
 
                     b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.TicketPick", b =>
                 {
-                    b.HasOne("TicketAnnd.Domain.Entities.Team", "Team")
+                    b.HasOne("TicketAnnd.Domain.Entities.Agent", "Agent")
                         .WithMany()
-                        .HasForeignKey("TeamId")
+                        .HasForeignKey("AgentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -806,9 +790,28 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Team");
+                    b.Navigation("Agent");
 
                     b.Navigation("Ticket");
+                });
+
+            modelBuilder.Entity("TicketAnnd.Domain.Entities.UserAgent", b =>
+                {
+                    b.HasOne("TicketAnnd.Domain.Entities.Agent", "Agent")
+                        .WithMany("UserAgents")
+                        .HasForeignKey("AgentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketAnnd.Domain.Entities.User", "User")
+                        .WithMany("UserAgents")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.UserCompanyRole", b =>
@@ -830,6 +833,11 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TicketAnnd.Domain.Entities.Agent", b =>
+                {
+                    b.Navigation("UserAgents");
+                });
+
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Company", b =>
                 {
                     b.Navigation("Invitations");
@@ -837,11 +845,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Navigation("Tickets");
 
                     b.Navigation("UserCompanyRoles");
-                });
-
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.Team", b =>
-                {
-                    b.Navigation("TeamMembers");
                 });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Ticket", b =>
@@ -855,7 +858,7 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.Navigation("RefreshTokens");
 
-                    b.Navigation("TeamMembers");
+                    b.Navigation("UserAgents");
 
                     b.Navigation("UserCompanyRoles");
                 });
