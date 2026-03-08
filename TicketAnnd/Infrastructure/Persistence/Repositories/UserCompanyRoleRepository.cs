@@ -141,7 +141,19 @@ public class UserCompanyRoleRepository : IUserCompanyRoleRepository
             {
                 UserId = x.u.Id,
                 Email = x.u.Email,
-                Role = x.ucr.Role.ToString()
+                Role = x.ucr.Role.ToString(),
+                TeamId = _context.Set<TeamMember>()
+                    .Where(tm => tm.UserId == x.u.Id)
+                    .Join(_context.Set<Team>(), tm => tm.TeamId, t => t.Id, (tm, t) => t)
+                    .Where(t => t.CompanyId == companyId)
+                    .Select(t => (Guid?)t.Id)
+                    .FirstOrDefault(),
+                TeamName = _context.Set<TeamMember>()
+                    .Where(tm => tm.UserId == x.u.Id)
+                    .Join(_context.Set<Team>(), tm => tm.TeamId, t => t.Id, (tm, t) => t)
+                    .Where(t => t.CompanyId == companyId)
+                    .Select(t => t.Name)
+                    .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
