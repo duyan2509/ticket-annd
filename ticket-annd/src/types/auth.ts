@@ -58,6 +58,8 @@ export interface MemberItem {
   userId: string
   email: string
   role: string
+  teamId?: string
+  teamName?: string
 }
 
 export interface MemberPagedResult {

@@ -15,7 +15,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button @click="onViewInvitations"
-            :class="(!showMembers && !showCategories && !showSla) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
+            :class="(!showMembers && !showCategories && !showSla && !showTeams) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View Invitations
           </button>
           <button @click="onViewMembers"
@@ -29,6 +29,10 @@
           <button @click="onViewSla"
             :class="showSla ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View SLA
+          </button>
+          <button @click="onViewTeams"
+            :class="showTeams ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
+            View Teams
           </button>
         </div>
       </div>
@@ -96,37 +100,10 @@
             </div>
           </template>
           <template v-else-if="showMembers">
-            <div v-if="loadingMembers" class="text-sm text-gray-600">Loading members...</div>
-            <div v-else>
-              <div v-if="loadingMembers" class="text-sm text-gray-600">Loading members...</div>
-              <div v-else>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
-                        </th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                      <tr v-for="m in members" :key="m.userId" class="hover:bg-gray-50 even:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-700 truncate">{{ m.email }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">
-                          <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{
-                            m.role }}</span>
-                        </td>
-                      </tr>
-                      <tr v-if="members.length === 0">
-                        <td colspan="2" class="px-4 py-6 text-center text-sm text-gray-500">No members found.</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <Members />
+          </template>
+          <template v-else-if="showTeams">
+            <Teams />
           </template>
           <template v-else>
             <div>
@@ -166,11 +143,13 @@ import { getMe } from '../api/auth'
 import { getCurrentCompany } from '../api/companies'
 import { getCompanyInvitations, createInvitation } from '../api/invitations'
 import { getCompanyMembers } from '../api/members'
+import Teams from './Teams.vue'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories'
 import type { CompanyInvitationItem, CategoryItem } from '../types/auth'
 import AppHeader from '../components/AppHeader.vue'
 import InvitationList from '../components/InvitationList.vue'
 import SlaContent from '../components/SlaContent.vue'
+import Members from './Members.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -180,6 +159,7 @@ const invitations = ref<CompanyInvitationItem[]>([])
 const members = ref<{ userId: string; email: string; role: string }[]>([])
 const showMembers = ref(false)
 const loadingMembers = ref(false)
+const showTeams = ref(false)
 const showCategories = ref(false)
 const showSla = ref(false)
 const categories = ref<CategoryItem[]>([])
@@ -303,6 +283,7 @@ async function onViewMembers() {
   showCategories.value = false
   showSla.value = false
   showMembers.value = !showMembers.value
+  showTeams.value = false
   if (!showMembers.value) return
   loadingMembers.value = true
   try {
@@ -314,6 +295,15 @@ async function onViewMembers() {
   } finally {
     loadingMembers.value = false
   }
+}
+
+async function onViewTeams() {
+  showMembers.value = false
+  showCategories.value = false
+  showSla.value = false
+  showTeams.value = !showTeams.value
+  if (!showTeams.value) return
+  // Teams handled by separate component
 }
 
 async function onViewInvitations() {
@@ -348,6 +338,7 @@ async function onViewCategories() {
 function onViewSla() {
   showMembers.value = false
   showCategories.value = false
+  showTeams.value = false
   showSla.value = !showSla.value
 }
 
