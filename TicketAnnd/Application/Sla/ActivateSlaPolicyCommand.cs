@@ -20,10 +20,10 @@ public class ActivateSlaPolicyCommandHandler : IRequestHandler<ActivateSlaPolicy
 
     public async Task<Unit> Handle(ActivateSlaPolicyCommand request, CancellationToken cancellationToken)
     {
-        var existing = await _repo.GetByIdAsync(request.PolicyId, cancellationToken);
+        var existing = await _repo.GetPolicyByIdAsync(request.PolicyId, cancellationToken);
         if (existing == null) throw new NotFoundException("SLA policy not found");
         if (existing.CompanyId != request.CompanyId) throw new ForbiddenException("Not allowed to activate this SLA policy");
-
+        if (existing.IsActive) throw new BadRequestException("Policy already activated");
         await _repo.SetActiveAsync(request.PolicyId, request.CompanyId, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;

@@ -39,4 +39,56 @@ public class TeamRepository : ITeamRepository
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
     }
+
+    public Task<TeamMember> GetMemberAsync(Guid requestTeamId, Guid requestCandidateId, CancellationToken cancellationToken)
+    {
+        var member = _context.TeamMembers.FirstOrDefault(tm => tm.TeamId == requestTeamId && tm.UserId == requestCandidateId);
+        return Task.FromResult(member);
+    }
+
+    public Task AddAsync(TeamMember teamMember, CancellationToken cancellationToken = default)
+    {
+        _context.TeamMembers.Add(teamMember);
+        return Task.CompletedTask;
+    }
+
+    public async Task<TeamMember?> GetMemberByUserIdAndTeamIdAsync(Guid userId, Guid teamId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TeamMembers.FirstOrDefaultAsync(x => x.UserId == userId && x.TeamId == teamId, cancellationToken);
+    }
+
+    public async Task<MemberPagedResultReadModel> GetMembersByTeamIdAsync(Guid teamId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var baseQuery = _context.TeamMembers.AsNoTracking().Where(x => x.TeamId == teamId);
+        var total = await baseQuery.CountAsync(cancellationToken);
+
+        var items = await baseQuery
+            .Join(
+                _context.Set<User>(),
+                ua => ua.UserId,
+                u => u.Id,
+                (ua, u) => new { ua, u })
+            .OrderBy(x => x.u.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new MemberPagedItemReadModel
+            {
+                UserId = x.u.Id,
+                Email = x.u.Email,
+                Role = string.Empty,
+                IsLeader = x.ua.TeamId == teamId && x.ua.UserId == x.u.Id && x.ua.Team.LeaderId == x.ua.Id
+            })
+            .ToListAsync(cancellationToken);
+
+        return new MemberPagedResultReadModel
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            Size = pageSize,
+        };
+    }
 }

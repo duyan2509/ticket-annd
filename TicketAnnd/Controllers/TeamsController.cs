@@ -52,10 +52,21 @@ public class TeamsController : ControllerBase
         var companyIdClaim = User.FindFirstValue("company_id");
         if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
             return Unauthorized();
-
         await _mediator.Send(new SwitchMemberCommand(companyId, request.UserId, teamId, request.ToTeamId), cancellationToken);
         return NoContent();
     }
+    [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
+    [HttpPost("{teamId:guid}/leader")]
+    public async Task<IActionResult> SetLeader([FromRoute] Guid teamId, [FromBody] SetLeaderRequest request, CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized();
+
+        await _mediator.Send(new SetTeamLeaderCommand(companyId, teamId, request.UserId), cancellationToken);
+        return NoContent();
+    }
+
 
     [HttpGet("{teamId:guid}/members")]
     public async Task<IActionResult> GetMembers([FromRoute] Guid teamId, [FromQuery] int page = 1, [FromQuery] int size = 10, CancellationToken cancellationToken = default)
@@ -65,6 +76,7 @@ public class TeamsController : ControllerBase
     }
 
     public record CreateTeamRequest(string Name);
+    public record SetLeaderRequest(Guid UserId);
     public record AssignMemberRequest(Guid UserId);
     public record SwitchMemberRequest(Guid UserId, Guid ToTeamId);
 }

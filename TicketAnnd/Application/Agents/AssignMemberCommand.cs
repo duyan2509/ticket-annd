@@ -12,20 +12,17 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
     private readonly ITeamRepository _teamRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserCompanyRoleRepository _userCompanyRoleRepository;
-    private readonly ITeamMemberRepository _teamMemberRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AssignMemberCommandHandler(
         ITeamRepository teamRepository,
         IUserRepository userRepository,
         IUserCompanyRoleRepository userCompanyRoleRepository,
-        ITeamMemberRepository teamMemberRepository,
         IUnitOfWork unitOfWork)
     {
         _teamRepository = teamRepository;
         _userRepository = userRepository;
         _userCompanyRoleRepository = userCompanyRoleRepository;
-        _teamMemberRepository = teamMemberRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -44,7 +41,7 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
         if (role == null)
             throw new BadRequestException("User not in company");
 
-        var exists = await _teamMemberRepository.GetByUserIdAndTeamIdAsync(request.UserId, request.TeamId, cancellationToken);
+        var exists = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(request.UserId, request.TeamId, cancellationToken);
         if (exists != null)
             return Unit.Value;
 
@@ -55,7 +52,7 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
             TeamId = request.TeamId
         };
 
-        await _teamMemberRepository.AddAsync(tm, cancellationToken);
+        await _teamRepository.AddAsync(tm, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

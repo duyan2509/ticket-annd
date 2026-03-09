@@ -8,20 +8,18 @@ public record SwitchMemberCommand(Guid CompanyId, Guid UserId, Guid FromTeamId, 
 
 public class SwitchMemberCommandHandler : IRequestHandler<SwitchMemberCommand,Unit>
 {
-    private readonly ITeamMemberRepository _teamMemberRepository;
     private readonly ITeamRepository _teamRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SwitchMemberCommandHandler(ITeamMemberRepository teamMemberRepository, ITeamRepository teamRepository, IUnitOfWork unitOfWork)
+    public SwitchMemberCommandHandler(ITeamRepository teamRepository, IUnitOfWork unitOfWork)
     {
-        _teamMemberRepository = teamMemberRepository;
         _teamRepository = teamRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Unit> Handle(SwitchMemberCommand request, CancellationToken cancellationToken)
     {
-        var tm = await _teamMemberRepository.GetByUserIdAndTeamIdAsync(request.UserId, request.FromTeamId, cancellationToken);
+        var tm = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(request.UserId, request.FromTeamId, cancellationToken);
         if (tm == null)
             throw new BadRequestException("User is not member of source team");
 
@@ -33,7 +31,8 @@ public class SwitchMemberCommandHandler : IRequestHandler<SwitchMemberCommand,Un
         var fromTeam = await _teamRepository.GetByIdAsync(request.FromTeamId, cancellationToken);
         if (fromTeam == null || fromTeam.CompanyId != toTeam.CompanyId)
             throw new BadRequestException("Teams must belong to same company");
-
+        if(fromTeam.LeaderId == tm.Id)
+            throw new BadRequestException("Team leader cannot be switched to another team");
         tm.TeamId = request.ToTeamId;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

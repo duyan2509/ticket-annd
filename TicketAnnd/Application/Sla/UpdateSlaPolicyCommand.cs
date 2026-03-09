@@ -20,7 +20,7 @@ public class UpdateSlaPolicyCommandHandler : IRequestHandler<UpdateSlaPolicyComm
 
     public async Task<Unit> Handle(UpdateSlaPolicyCommand request, CancellationToken cancellationToken)
     {
-        var existing = await _repo.GetByIdAsync(request.PolicyId, cancellationToken);
+        var existing = await _repo.GetPolicyByIdAsync(request.PolicyId, cancellationToken);
         if (existing == null) throw new NotFoundException("SLA policy not found");
         if (existing.CompanyId != request.CompanyId) throw new ForbiddenException("Not allowed to update this SLA policy");
 

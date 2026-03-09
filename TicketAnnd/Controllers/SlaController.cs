@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,18 @@ public class SlaController : ControllerBase
     public SlaController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    [HttpGet("rules")]
+    public async Task<IActionResult> GetRulesForActivePolicy(CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var rules = await _mediator.Send(new GetSlaRulesForActivePolicyQuery(companyId), cancellationToken);
+        if (rules == null || !rules.Any()) return NotFound("Active SLA policy not found");
+        return Ok(rules);
     }
 
     [HttpGet("policies")]

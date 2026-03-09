@@ -30,4 +30,8 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Application\Teams\" />
+  </ItemGroup>
+
 </Project>

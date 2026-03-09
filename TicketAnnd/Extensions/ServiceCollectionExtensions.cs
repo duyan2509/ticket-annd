@@ -88,13 +88,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
-        services.AddScoped<ITeamMemberRepository, TeamMemberRepository>();
         services.AddScoped<ISlaPolicyRepository, SlaPolicyRepository>();
-        services.AddScoped<ISlaRuleRepository, SlaRuleRepository>();
         services.AddScoped<IUserCompanyRoleRepository, UserCompanyRoleRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<ITicketRepository, TicketRepository>();
         return services;
     }
 

@@ -15,7 +15,7 @@ public class SlaRuleConfiguration : IEntityTypeConfiguration<SlaRule>
         builder.Property(x=>x.FirstResponseMinutes).IsRequired();
         builder.Property(x=>x.ResolutionMinutes).IsRequired();
         builder.HasOne(x => x.SlaPolicy)
-            .WithMany()
+            .WithMany(x=>x.SlaRules)
             .HasForeignKey(x => x.SlaPolicyId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(x => new
