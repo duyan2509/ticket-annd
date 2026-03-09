@@ -13,12 +13,10 @@ public class TicketAnndDbContext : DbContext
     private readonly IMediator _mediator;
 
     public DbSet<Ticket> Tickets => Set<Ticket>();
-    public DbSet<TicketAssign> TicketAssigns => Set<TicketAssign>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Categrory> Categories => Set<Categrory>();
-    public DbSet<TicketPick> TicketPicks => Set<TicketPick>();
     public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
     public DbSet<SlaRule> SlaRules => Set<SlaRule>();
     public DbSet<UserCompanyRole> UserCompanyRoles => Set<UserCompanyRole>();
@@ -41,11 +39,11 @@ public class TicketAnndDbContext : DbContext
             .ToList();
 
 
+        var result = await base.SaveChangesAsync(cancellationToken);
         foreach (var domainEvent in domainEvents)
         {
             await _mediator.Publish(domainEvent, cancellationToken);
         }
-        var result = await base.SaveChangesAsync(cancellationToken);
 
         return result;
     }

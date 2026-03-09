@@ -31,9 +31,9 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(t => t.Customer)
+        builder.HasOne(t => t.Raiser)
             .WithMany()
-            .HasForeignKey(t => t.CustomerId)
+            .HasForeignKey(t => t.RaiserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(t => t.Team)
@@ -41,7 +41,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.TeamId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(t => t.category)
+        builder.HasOne(t => t.Category)
             .WithMany()
             .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
@@ -51,11 +51,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.SlaRuleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(t => t.TicketAssign)
-            .WithOne()
-            .HasForeignKey<Ticket>(t => t.TicketAssignId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
+
     }
 }
 

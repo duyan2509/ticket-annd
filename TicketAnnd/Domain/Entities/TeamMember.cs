@@ -7,4 +7,5 @@ public class TeamMember : BaseEntity
 
     public Guid TeamId { get; set; }
     public virtual Team Team { get; set; }
+    public bool IsLeader { get; set; } = false;
 }
