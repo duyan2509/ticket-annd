@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TicketAnnd.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309040856_RefractorLeader")]
+    partial class RefractorLeader
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -616,7 +619,7 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TicketAnnd.Domain.Entities.SlaRule", b =>
                 {
                     b.HasOne("TicketAnnd.Domain.Entities.SlaPolicy", "SlaPolicy")
-                        .WithMany("SlaRules")
+                        .WithMany()
                         .HasForeignKey("SlaPolicyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -729,11 +732,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Navigation("Tickets");
 
                     b.Navigation("UserCompanyRoles");
-                });
-
-            modelBuilder.Entity("TicketAnnd.Domain.Entities.SlaPolicy", b =>
-                {
-                    b.Navigation("SlaRules");
                 });
 
             modelBuilder.Entity("TicketAnnd.Domain.Entities.Team", b =>

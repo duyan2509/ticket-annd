@@ -8,15 +8,15 @@ public record GetSlaRulesByPolicyQuery(Guid SlaPolicyId) : IRequest<IReadOnlyLis
 
 public class GetSlaRulesByPolicyQueryHandler : IRequestHandler<GetSlaRulesByPolicyQuery, IReadOnlyList<SlaRuleReadModel>>
 {
-    private readonly ISlaRuleRepository _ruleRepo;
+    private readonly ISlaPolicyRepository _policyRepo;
 
-    public GetSlaRulesByPolicyQueryHandler(ISlaRuleRepository ruleRepo)
+    public GetSlaRulesByPolicyQueryHandler(ISlaPolicyRepository policyRepo)
     {
-        _ruleRepo = ruleRepo;
+        _policyRepo=policyRepo;
     }
 
     public async Task<IReadOnlyList<SlaRuleReadModel>> Handle(GetSlaRulesByPolicyQuery request, CancellationToken cancellationToken)
     {
-        return await _ruleRepo.GetByPolicyIdAsync(request.SlaPolicyId, cancellationToken);
+        return await _policyRepo.GetRulesByPolicyIdAsync(request.SlaPolicyId, cancellationToken);
     }
 }

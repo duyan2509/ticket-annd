@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TicketAnnd.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309075646_FixTicketSchema")]
+    partial class FixTicketSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,10 +299,15 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("SlaPolicyId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SlaPolicyId1")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SlaPolicyId1");
 
                     b.HasIndex("SlaPolicyId", "Name")
                         .IsUnique();
@@ -616,10 +624,14 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("TicketAnnd.Domain.Entities.SlaRule", b =>
                 {
                     b.HasOne("TicketAnnd.Domain.Entities.SlaPolicy", "SlaPolicy")
-                        .WithMany("SlaRules")
+                        .WithMany()
                         .HasForeignKey("SlaPolicyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("TicketAnnd.Domain.Entities.SlaPolicy", null)
+                        .WithMany("SlaRules")
+                        .HasForeignKey("SlaPolicyId1");
 
                     b.Navigation("SlaPolicy");
                 });

@@ -8,3 +8,5 @@ public class SlaRule:BaseEntity
     public int ResolutionMinutes  { get; set; }
     public string Name { get; set; }
 }
+
+    

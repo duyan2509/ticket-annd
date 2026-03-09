@@ -7,4 +7,5 @@ public class MemberPagedItemReadModel
     public string Role { get; init; } = string.Empty;
     public Guid? TeamId { get; init; }
     public string? TeamName { get; init; } = string.Empty;
+    public bool? IsLeader { get; init; }
 }
