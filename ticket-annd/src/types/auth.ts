@@ -60,6 +60,7 @@ export interface MemberItem {
   role: string
   teamId?: string
   teamName?: string
+  isLeader?: boolean|false
 }
 
 export interface MemberPagedResult {

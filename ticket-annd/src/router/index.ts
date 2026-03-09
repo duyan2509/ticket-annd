@@ -14,6 +14,8 @@ const routes = [
   { path: '/:slug/members', name: 'Members', component: () => import('../views/Members.vue'), meta: { requiresAuth: true } },
   { path: '/:slug/sla', name: 'Sla', component: () => import('../views/Sla.vue'), meta: { requiresAuth: true } },
   { path: '/:slug', name: 'Company', component: () => import('../views/Company.vue'), meta: { requiresAuth: true } },
+  { path: '/:slug/tickets', name: 'Tickets', component: () => import('../views/TicketsList.vue'), meta: { requiresAuth: true } },
+  { path: '/:slug/tickets/:ticketCode', name: 'Ticket', component: () => import('../views/Ticket.vue'), meta: { requiresAuth: true } },
 ]
 
 let restorePromise: Promise<string | null> | null = null

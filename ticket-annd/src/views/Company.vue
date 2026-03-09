@@ -5,8 +5,13 @@
     <main class="max-w-4xl mx-auto p-6">
       <h1 class="text-2xl font-semibold text-gray-800">{{ company?.name ?? 'Company' }}</h1>
       <p class="text-sm text-gray-600 mt-2">Slug: {{ company?.slug }}</p>
-      <div class="mt-6 bg-white rounded shadow p-4">
+
+      <div class="mt-6 bg-white rounded shadow p-4 flex items-center justify-between">
         <p class="text-sm text-gray-700">Role: {{ company?.role ?? '-' }}</p>
+          <button @click="onViewTickets"
+            :class="showTickets ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
+            Go to Tickets page
+          </button>
       </div>
 
       <div class="mt-6 flex items-center justify-between">
@@ -14,6 +19,7 @@
           <button @click="goDashboard" class="px-3 py-1 bg-gray-200 rounded">Back to Dashboard</button>
         </div>
         <div class="flex items-center gap-2">
+        
           <button @click="onViewInvitations"
             :class="(!showMembers && !showCategories && !showSla && !showTeams) ? 'px-3 py-1 bg-blue-600 text-white rounded' : 'px-3 py-1 bg-gray-200 rounded'">
             View Invitations
@@ -160,6 +166,7 @@ const members = ref<{ userId: string; email: string; role: string }[]>([])
 const showMembers = ref(false)
 const loadingMembers = ref(false)
 const showTeams = ref(false)
+const showTickets = ref(false)
 const showCategories = ref(false)
 const showSla = ref(false)
 const categories = ref<CategoryItem[]>([])
@@ -204,6 +211,8 @@ async function load() {
 function goDashboard() {
   router.push('/')
 }
+
+
 
 async function onInvite() {
   inviteError.value = ''
@@ -303,7 +312,12 @@ async function onViewTeams() {
   showSla.value = false
   showTeams.value = !showTeams.value
   if (!showTeams.value) return
-  // Teams handled by separate component
+}
+
+function onViewTickets() {
+  // navigate to tickets list page for this company
+  if (!company.value) return
+  router.push({ name: 'Tickets', params: { slug: company.value.slug } })
 }
 
 async function onViewInvitations() {

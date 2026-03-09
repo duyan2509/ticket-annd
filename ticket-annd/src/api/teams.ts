@@ -30,3 +30,8 @@ export async function assignMember(teamId: string, userId: string) {
   const { data } = await api.post(`/teams/${teamId}/members`, { userId })
   return data
 }
+
+export async function setLeader(teamId: string, userId: string) {
+  const { data } = await api.post(`/teams/${teamId}/leader`, { userId })
+  return data
+}

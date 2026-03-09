@@ -26,6 +26,10 @@ export function getSlaRulesByPolicy(policyId: string) {
   return api.get<SlaRuleItem[]>(`/sla/policies/${policyId}/rules`).then((r) => r.data)
 }
 
+export function getActiveSlaRules() {
+  return api.get<SlaRuleItem[]>('/sla/rules').then((r) => r.data)
+}
+
 export function activateSlaPolicy(policyId: string) {
   return api.post(`/sla/policies/${policyId}/activate`).then((r) => r.data)
 }
