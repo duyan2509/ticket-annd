@@ -19,10 +19,21 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-100">
           <tr v-for="t in teams" :key="t.teamId" class="hover:bg-gray-50 even:bg-gray-50">
-            <td class="px-4 py-3 text-sm text-gray-700 truncate">{{ t.name }}</td>
             <td class="px-4 py-3 text-sm text-gray-700">
-              <button @click="onModifyTeam(t.teamId)" class="px-2 py-1 bg-yellow-400 text-white rounded text-sm mr-2">Modify</button>
-              <button @click="onViewTeamMembers(t.teamId, t.name)" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">View Members</button>
+              <div v-if="editingTeamId === t.teamId">
+                <input v-model="editingTeamName" class="px-2 py-1 border rounded w-full" />
+              </div>
+              <div v-else class="truncate">{{ t.name }}</div>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              <div v-if="editingTeamId === t.teamId">
+                <button @click="onSaveTeam(t.teamId)" class="px-2 py-1 bg-green-600 text-white rounded text-sm mr-2">Save</button>
+                <button @click="onCancelEdit" class="px-2 py-1 bg-gray-400 text-white rounded text-sm">Cancel</button>
+              </div>
+              <div v-else>
+                <button @click="onModifyTeam(t.teamId, t.name)" class="px-2 py-1 bg-yellow-400 text-white rounded text-sm mr-2">Modify</button>
+                <button @click="onViewTeamMembers(t.teamId, t.name)" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">View Members</button>
+              </div>
             </td>
           </tr>
           <tr v-if="teams.length === 0">
@@ -61,7 +72,7 @@
                     <select v-model="switchTargets[m.userId]" class="px-2 py-1 border rounded">
                       <option v-for="opt in teams" :key="opt.teamId" :value="opt.teamId">{{ opt.name }}</option>
                     </select>
-                    <button @click="onSwitchMember(m.userId)" class="px-2 py-1 bg-green-600 text-white rounded text-sm">Switch</button>
+                    <button v-bind:disabled="selectedTeamId === switchTargets[m.userId]" @click="onSwitchMember(m.userId)" class="px-2 py-1 bg-green-600 text-white rounded text-sm">Switch</button>
                     <button v-if="!m.isLeader" @click="onSetLeader(m.userId)" class="px-2 py-1 bg-purple-600 text-white rounded text-sm ml-2">Set Leader</button>
                   </div>
                 </td>
@@ -80,7 +91,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { getCurrentCompany } from '../api/companies'
-import { getTeamsByCompany, createTeam, getTeamMembers, switchMember, setLeader } from '../api/teams'
+import { getTeamsByCompany, createTeam, getTeamMembers, switchMember, setLeader, updateTeam } from '../api/teams'
 
 const teams = ref<{ teamId: string; name: string }[]>([])
 const newTeamName = ref('')
@@ -90,6 +101,8 @@ const selectedTeamName = ref('')
 const teamMembers = ref<{ userId: string; email: string; role: string; isLeader?: boolean }[]>([])
 const loadingTeamMembers = ref(false)
 const switchTargets = ref<Record<string, string>>({})
+const editingTeamId = ref<string | null>(null)
+const editingTeamName = ref('')
 
 async function loadTeams() {
   try {
@@ -122,8 +135,32 @@ async function onCreateTeam() {
   }
 }
 
-function onModifyTeam(_teamId: string) {
-  alert('Modify team not implemented')
+function onModifyTeam(teamId: string, name: string) {
+  editingTeamId.value = teamId
+  editingTeamName.value = name
+}
+
+async function onSaveTeam(teamId: string) {
+  teamError.value = ''
+  if (!editingTeamName.value || editingTeamName.value.trim() === '') {
+    teamError.value = 'Name is required'
+    return
+  }
+  try {
+    await updateTeam(teamId, editingTeamName.value.trim())
+    editingTeamId.value = null
+    editingTeamName.value = ''
+    await loadTeams()
+  } catch (err: unknown) {
+    const axiosErr = err as any
+    teamError.value = axiosErr?.response?.data?.message ?? (err instanceof Error ? err.message : 'Failed to update team')
+  }
+}
+
+function onCancelEdit() {
+  editingTeamId.value = null
+  editingTeamName.value = ''
+  teamError.value = ''
 }
 
 async function onViewTeamMembers(teamId: string, teamName: string) {

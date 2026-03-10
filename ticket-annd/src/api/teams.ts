@@ -7,7 +7,7 @@ export interface TeamItem {
 }
 
 export async function getTeamsByCompany(companyId: string): Promise<TeamItem[]> {
-  const { data } = await api.get<TeamItem[]>(`/teams?companyId=${companyId}`)
+  const { data } = await api.get<TeamItem[]>(`/teams`)
   return data
 }
 
@@ -34,4 +34,8 @@ export async function assignMember(teamId: string, userId: string) {
 export async function setLeader(teamId: string, userId: string) {
   const { data } = await api.post(`/teams/${teamId}/leader`, { userId })
   return data
+}
+
+export async function updateTeam(teamId: string, name: string): Promise<void> {
+  await api.put(`/teams/${teamId}`, { name })
 }

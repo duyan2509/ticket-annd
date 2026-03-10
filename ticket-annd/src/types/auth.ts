@@ -75,3 +75,29 @@ export interface CategoryItem {
   name: string
 }
 
+export interface TicketPagedResult {
+  items: any[]
+  total: number
+  page: number
+  size: number
+}
+export interface TicketPageItem {
+  id: string
+  subject: string
+  status: string
+  categoryName: string
+  categoryId: string
+  slaRuleId: string
+  teamId?: string
+  teamName?: string
+  slaRuleName: string
+  firstResponseAt: string | null
+  isResoluionBreached: boolean
+  isFirstResponseBreached: boolean
+  raiserId: string
+  raiserName: string
+  slaResolutionMinutes: number
+  slaResponseMinutes: number
+  ticketCode: string
+}
+
