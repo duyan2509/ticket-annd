@@ -10,5 +10,5 @@ public class User : BaseEntity
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
     public virtual ICollection<TeamMember> TeamMembers { get; set; }
     public virtual ICollection<Invitation> Invitations { get; set; }
-
+    
 }

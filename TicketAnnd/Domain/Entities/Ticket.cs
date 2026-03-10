@@ -1,4 +1,6 @@
 ﻿using TicketAnnd.Domain.Enums;
+using NanoidDotNet;
+using NpgsqlTypes;
 
 namespace TicketAnnd.Domain.Entities;
 
@@ -13,7 +15,7 @@ public class Ticket:BaseEntity
     public Guid CategoryId { get; set; }
     public virtual Categrory Category { get; set; }
     public string Subject { get; set; }
-    public string TicketCode { get; set; } = Guid.NewGuid().ToString("N")[..6].ToUpper();
+    public string TicketCode { get; set; } = Nanoid.Generate("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6);
 
     public string? Body { get; set; }
     public TicketStatuses Status { get; set; }
@@ -25,6 +27,8 @@ public class Ticket:BaseEntity
     public DateTime ResolvedAt {get;set;} = DateTime.MinValue;
     public bool IsResolutionBreached {get;set;} = false;
     public bool IsResponseBreached {get;set;} = false;
+    public virtual ICollection<TicketPause> TicketPauses { get; set; } = new List<TicketPause>();
+    public NpgsqlTsVector SearchVector { get; set; }
 
 }
 

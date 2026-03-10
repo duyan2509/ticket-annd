@@ -50,8 +50,21 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .WithMany()
             .HasForeignKey(t => t.SlaRuleId)
             .OnDelete(DeleteBehavior.Restrict);
-
-
+        builder
+            .HasIndex(x=>x.SearchVector)
+            .HasMethod("GIN")
+            .HasDatabaseName("idx_ticket_search")
+            .HasAnnotation(
+                "Npgsql:IndexExpression",
+                "to_tsvector('english', \"Subject\" || ' ' || \"Body\")"
+            );
+        builder.Property(t => t.SearchVector)
+            .HasComputedColumnSql(
+                @"to_tsvector('english', 
+            coalesce(""Subject"", '') || ' ' || 
+            coalesce(""Body"", '')
+        )",
+                stored: true);
     }
 }
 

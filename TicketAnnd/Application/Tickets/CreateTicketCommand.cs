@@ -62,7 +62,6 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         }
         var ticket = new Ticket
         {
-            Id = Guid.NewGuid(),
             CompanyId = request.CompanyId,
             RaiserId = request.RaiserId,
             CategoryId = request.CategoryId,

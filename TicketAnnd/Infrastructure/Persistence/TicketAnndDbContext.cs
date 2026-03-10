@@ -24,6 +24,7 @@ public class TicketAnndDbContext : DbContext
     public DbSet<Invitation> Invitations => Set<Invitation>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<TicketPause> TicketPauses => Set<TicketPause>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

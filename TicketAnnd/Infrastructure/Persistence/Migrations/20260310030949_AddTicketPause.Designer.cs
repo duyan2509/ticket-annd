@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using NpgsqlTypes;
 using TicketAnnd.Infrastructure.Persistence;
 
 #nullable disable
@@ -12,9 +12,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310030949_AddTicketPause")]
+    partial class AddTicketPause
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -420,12 +422,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<NpgsqlTsVector>("SearchVector")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasComputedColumnSql("to_tsvector('english', \r\n            coalesce(\"Subject\", '') || ' ' || \r\n            coalesce(\"Body\", '')\r\n        )", true);
-
                     b.Property<int>("SlaFirstResponseMinutes")
                         .HasColumnType("integer");
 
@@ -459,12 +455,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("RaiserId");
-
-                    b.HasIndex("SearchVector")
-                        .HasDatabaseName("idx_ticket_search")
-                        .HasAnnotation("Npgsql:IndexExpression", "to_tsvector('english', \"Subject\" || ' ' || \"Body\")");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.HasIndex("SlaRuleId");
 
