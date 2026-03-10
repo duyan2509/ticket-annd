@@ -29,9 +29,24 @@ public class TeamsController : ControllerBase
         var result = await _mediator.Send(new CreateTeamCommand(companyId, request.Name), cancellationToken);
         return Created($"/api/teams/{result.TeamId}", result);
     }
-    [HttpGet]
-    public async Task<IActionResult> GetByCompany([FromQuery] Guid companyId, CancellationToken cancellationToken)
+
+    [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
+    [HttpPut("{teamId:guid}")]
+    public async Task<IActionResult> Update([FromRoute] Guid teamId, [FromBody] UpdateTeamRequest request, CancellationToken cancellationToken)
     {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized();
+
+        await _mediator.Send(new UpdateTeamCommand(teamId, companyId, request.Name), cancellationToken);
+        return NoContent();
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetByCompany(CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized();
         var items = await _mediator.Send(new GetTeamsByCompanyQuery(companyId), cancellationToken);
         return Ok(items);
     }
@@ -42,7 +57,7 @@ public class TeamsController : ControllerBase
         var companyIdClaim = User.FindFirstValue("company_id");
         if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
             return Unauthorized();
-        await _mediator.Send(new AssignMemberCommand(companyId,teamId, request.UserId), cancellationToken);
+        await _mediator.Send(new AssignMemberCommand(companyId, teamId, request.UserId), cancellationToken);
         return NoContent();
     }
     [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
@@ -76,6 +91,7 @@ public class TeamsController : ControllerBase
     }
 
     public record CreateTeamRequest(string Name);
+    public record UpdateTeamRequest(string Name);
     public record SetLeaderRequest(Guid UserId);
     public record AssignMemberRequest(Guid UserId);
     public record SwitchMemberRequest(Guid UserId, Guid ToTeamId);

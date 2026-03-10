@@ -91,4 +91,11 @@ public class TeamRepository : ITeamRepository
             Size = pageSize,
         };
     }
+
+    public Task<bool> CheckExistInCompanyAsync(Guid requestCompanyId, Guid requestTeamId, CancellationToken cancellationToken = default)
+    {
+        return _context.Teams
+            .AsNoTracking()
+            .AnyAsync(t=>t.Id == requestTeamId && t.CompanyId == requestCompanyId, cancellationToken);
+    }
 }
