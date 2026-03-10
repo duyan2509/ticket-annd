@@ -29,7 +29,7 @@ public class SlaController : ControllerBase
             return Unauthorized("Not allow to access without company context.");
 
         var rules = await _mediator.Send(new GetSlaRulesForActivePolicyQuery(companyId), cancellationToken);
-        if (rules == null || !rules.Any()) return NotFound("Active SLA policy not found");
+        if (rules == null || !rules.Any()) return NotFound("Active SLA rules not found");
         return Ok(rules);
     }
 

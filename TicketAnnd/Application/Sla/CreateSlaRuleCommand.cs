@@ -25,7 +25,7 @@ public class CreateSlaRuleCommandHandler : IRequestHandler<CreateSlaRuleCommand,
         if (policy == null) throw new NotFoundException("SLA policy not found");
         if (policy.CompanyId != request.CompanyId) throw new ForbiddenException("Not allowed to create rule for this SLA policy");
 
-        var rule = new SlaRule { Id = Guid.NewGuid(), Name= request.Name, SlaPolicyId = request.SlaPolicyId, FirstResponseMinutes = request.FirstResponseMinutes, ResolutionMinutes = request.ResolutionMinutes };
+        var rule = new SlaRule { Name= request.Name, SlaPolicyId = request.SlaPolicyId, FirstResponseMinutes = request.FirstResponseMinutes, ResolutionMinutes = request.ResolutionMinutes };
         policy.AddRule(rule);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return rule.Id;
