@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain;
 
@@ -8,11 +9,14 @@ public record UpdateTeamCommand(Guid TeamId, Guid CompanyId, string Name) : IReq
 
 public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, Unit>
 {
+    private readonly IMediator _mediator;
+
     private readonly ITeamRepository _teamRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateTeamCommandHandler(ITeamRepository teamRepo, IUnitOfWork unitOfWork)
+    public UpdateTeamCommandHandler(ITeamRepository teamRepo, IUnitOfWork unitOfWork, IMediator mediator)
     {
+        _mediator = mediator;
         _teamRepo = teamRepo;
         _unitOfWork = unitOfWork;
     }
@@ -26,6 +30,7 @@ public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, Unit>
         team.Name = request.Name?.Trim() ?? string.Empty;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
 
         return Unit.Value;
     }

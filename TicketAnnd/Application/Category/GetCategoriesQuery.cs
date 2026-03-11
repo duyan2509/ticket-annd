@@ -3,7 +3,6 @@ using TicketAnnd.Domain.ReadModels;
 using TicketAnnd.Domain.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
-using MediatR;
 
 namespace TicketAnnd.Application.Category;
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Category;
 using TicketAnnd.Domain.ReadModels;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace TicketAnnd.Controllers;
 
@@ -20,6 +21,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Categories" })]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -32,6 +34,7 @@ public class CategoriesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = nameof(TicketAnnd.Domain.Enums.AppRoles.CompanyAdmin))]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Categories" })]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");

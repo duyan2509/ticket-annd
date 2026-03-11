@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Invitation;
 using TicketAnnd.Domain.Enums;
+using Microsoft.AspNetCore.OutputCaching;
+using Serilog;
 
 namespace TicketAnnd.Controllers;
 
@@ -33,6 +35,7 @@ public class InvitationsController : ControllerBase
     }
 
     [HttpGet("me")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Invitations" })]
     public async Task<IActionResult> GetByEmail([FromQuery] string? status = null, [FromQuery] string? companyName = null, [FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
     {
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
@@ -81,8 +84,14 @@ public class InvitationsController : ControllerBase
 
     [HttpGet("company")]
     [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Invitations" })]
     public async Task<IActionResult> GetByCompany([FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
     {
+        foreach (var header in Request.Headers)
+        {
+            Log.Information("{Key}: {Value}", header.Key, header.Value);
+        }
+
         var companyIdClaim = User.FindFirstValue("company_id");
         if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
             return Unauthorized("Not allow to access without company context.");

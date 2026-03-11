@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using Serilog;
+using System.Security.Claims;
 using TicketAnnd;
 using TicketAnnd.Extensions;
+using TicketAnnd.OutputCaching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy("CompCache", new CompanyCachePolicy());
+    options.AddPolicy("UserCache", new UserCachePolicy());
+});
+
 var app = builder.Build();
 
 await app.SeedSuperAdminAsync();
@@ -54,6 +62,7 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseOutputCache();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.MapControllers();

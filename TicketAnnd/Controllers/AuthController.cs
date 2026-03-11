@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Auth;
@@ -77,6 +78,7 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
+    [OutputCache(PolicyName = "UserCache", Tags = new[] { "Users" })]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");

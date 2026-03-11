@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain;
 using TicketAnnd.Application;
@@ -9,11 +10,14 @@ public record UpdateSlaPolicyCommand(Guid PolicyId, Guid CompanyId, string Name)
 
 public class UpdateSlaPolicyCommandHandler : IRequestHandler<UpdateSlaPolicyCommand, Unit>
 {
+    private readonly IMediator _mediator;
+
     private readonly ISlaPolicyRepository _repo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateSlaPolicyCommandHandler(ISlaPolicyRepository repo, IUnitOfWork unitOfWork)
+    public UpdateSlaPolicyCommandHandler(ISlaPolicyRepository repo, IUnitOfWork unitOfWork, IMediator mediator)
     {
+        _mediator = mediator;
         _repo = repo;
         _unitOfWork = unitOfWork;
     }
@@ -27,6 +31,7 @@ public class UpdateSlaPolicyCommandHandler : IRequestHandler<UpdateSlaPolicyComm
         existing.Name = request.Name;
         await _repo.UpdateAsync(existing, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Sla"), cancellationToken);
         return Unit.Value;
     }
 }

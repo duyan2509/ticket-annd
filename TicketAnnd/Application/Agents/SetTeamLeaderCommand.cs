@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Infrastructure.Persistence;
@@ -9,11 +10,14 @@ public record SetTeamLeaderCommand(Guid CompanyId, Guid TeamId, Guid CandidateId
 
 public class SetTeamLeaderCommandHandler : IRequestHandler<SetTeamLeaderCommand, Unit>
 {
+    private readonly IMediator _mediator;
+
     private readonly ITeamRepository _teamRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SetTeamLeaderCommandHandler(ITeamRepository teamRepo, IUnitOfWork unitOfWork)
+    public SetTeamLeaderCommandHandler(ITeamRepository teamRepo, IUnitOfWork unitOfWork, IMediator mediator)
     {
+        _mediator = mediator;
         _teamRepo = teamRepo;
         _unitOfWork = unitOfWork;
     }
@@ -28,6 +32,7 @@ public class SetTeamLeaderCommandHandler : IRequestHandler<SetTeamLeaderCommand,
         if (member == null) throw new NotFoundException("Team member not found");
         team.SetLeader(member.Id);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
 
         return Unit.Value;
     }

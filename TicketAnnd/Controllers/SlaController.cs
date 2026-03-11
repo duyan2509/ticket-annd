@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Sla;
 using TicketAnnd.Domain.Enums;
 using TicketAnnd.Domain.ReadModels;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace TicketAnnd.Controllers;
 
@@ -22,6 +23,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("rules")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
     public async Task<IActionResult> GetRulesForActivePolicy(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -34,6 +36,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("policies")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
     public async Task<IActionResult> GetPolicies([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -81,6 +84,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("policies/{id:guid}/rules")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
     public async Task<IActionResult> GetRules([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSlaRulesByPolicyQuery(id), cancellationToken);

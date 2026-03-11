@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Tickets;
 using TicketAnnd.Domain.Enums;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace TicketAnnd.Controllers;
 
@@ -20,6 +21,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet("by-code")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Tickets" })]
     public async Task<IActionResult> GetByCode([FromQuery] string? ticketCode, CancellationToken cancellationToken = default)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -34,6 +36,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Tickets" })]
     public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid? teamId = null, [FromQuery] string? status = null, [FromQuery] Guid? categoryId = null, [FromQuery] string? subject = null, CancellationToken cancellationToken = default)
     {
         var companyIdClaim = User.FindFirstValue("company_id");

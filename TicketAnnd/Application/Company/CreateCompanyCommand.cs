@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Entities;
 using TicketAnnd.Domain.Enums;
@@ -13,15 +14,17 @@ public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand,
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserCompanyRoleRepository _userCompanyRoleRepository;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly IMediator _mediator;
     public CreateCompanyCommandHandler(
         ICompanyRepository companyRepository,
         IUserCompanyRoleRepository userCompanyRoleRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMediator mediator)
     {
         _companyRepository = companyRepository;
         _userCompanyRoleRepository = userCompanyRoleRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
     }
 
     public async Task<CreateCompanyResult> Handle(CreateCompanyCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand,
 
         await _companyRepository.AddAsync(company, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Companies"), cancellationToken);
 
         return new CreateCompanyResult(company.Id, company.Name);
     }

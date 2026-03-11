@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain.ReadModels;
 using TicketAnnd.Domain;
@@ -12,11 +13,14 @@ public record CreateTeamResult(Guid TeamId, string Name);
 
 public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, CreateTeamResult>
 {
+    private readonly IMediator _mediator;
+
     private readonly ITeamRepository _teamRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateTeamCommandHandler(ITeamRepository teamRepository, IUnitOfWork unitOfWork)
+    public CreateTeamCommandHandler(ITeamRepository teamRepository, IUnitOfWork unitOfWork, IMediator mediator)
     {
+        _mediator = mediator;
         _teamRepository = teamRepository;
         _unitOfWork = unitOfWork;
     }
@@ -27,6 +31,7 @@ public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, Creat
 
         await _teamRepository.AddAsync(team, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
 
         return new CreateTeamResult(team.Id, team.Name);
     }

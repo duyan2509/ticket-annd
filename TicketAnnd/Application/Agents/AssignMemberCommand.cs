@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Entities;
@@ -13,17 +14,19 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
     private readonly IUserRepository _userRepository;
     private readonly IUserCompanyRoleRepository _userCompanyRoleRepository;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly IMediator _mediator;
     public AssignMemberCommandHandler(
         ITeamRepository teamRepository,
         IUserRepository userRepository,
         IUserCompanyRoleRepository userCompanyRoleRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMediator mediator)
     {
         _teamRepository = teamRepository;
         _userRepository = userRepository;
         _userCompanyRoleRepository = userCompanyRoleRepository;
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(AssignMemberCommand request, CancellationToken cancellationToken)
@@ -54,6 +57,7 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
 
         await _teamRepository.AddAsync(tm, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
 
         return Unit.Value;
     }

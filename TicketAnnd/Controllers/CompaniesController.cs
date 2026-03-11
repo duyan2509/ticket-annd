@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Company;
 using TicketAnnd.Domain.Enums;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace TicketAnnd.Controllers;
 
@@ -31,6 +32,7 @@ public class CompaniesController : ControllerBase
     }
 
     [HttpGet]
+    [OutputCache(PolicyName = "UserCache", Tags = new[] { "Companies" })]
     public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int size = 10, CancellationToken cancellationToken = default)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
@@ -42,6 +44,7 @@ public class CompaniesController : ControllerBase
     }
     [HttpGet("current")]
     [Authorize(Roles = $"{nameof(AppRoles.CompanyAdmin)},{nameof(AppRoles.Agent)},{nameof(AppRoles.Customer)}")]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Companies" })]
     public async Task<IActionResult> GetCurrent(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -59,6 +62,7 @@ public class CompaniesController : ControllerBase
 
     [HttpGet("members")]
     [Authorize]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Companies" })]
     public async Task<IActionResult> GetMembers([FromQuery] int page = 1, [FromQuery] int size = 10, CancellationToken cancellationToken = default)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");

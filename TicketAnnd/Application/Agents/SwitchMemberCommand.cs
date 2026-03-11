@@ -1,4 +1,5 @@
 using MediatR;
+using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain;
 
@@ -8,11 +9,14 @@ public record SwitchMemberCommand(Guid CompanyId, Guid UserId, Guid FromTeamId, 
 
 public class SwitchMemberCommandHandler : IRequestHandler<SwitchMemberCommand,Unit>
 {
+    private readonly IMediator _mediator;
+
     private readonly ITeamRepository _teamRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SwitchMemberCommandHandler(ITeamRepository teamRepository, IUnitOfWork unitOfWork)
+    public SwitchMemberCommandHandler(ITeamRepository teamRepository, IUnitOfWork unitOfWork, IMediator mediator)
     {
+        _mediator = mediator;
         _teamRepository = teamRepository;
         _unitOfWork = unitOfWork;
     }
@@ -35,6 +39,7 @@ public class SwitchMemberCommandHandler : IRequestHandler<SwitchMemberCommand,Un
             throw new BadRequestException("Team leader cannot be switched to another team");
         tm.TeamId = request.ToTeamId;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
 
         return Unit.Value;
     }
