@@ -43,17 +43,18 @@ public class CreateInvitationCommandHandler : IRequestHandler<CreateInvitationCo
         var existingUser = await _userRepository.GetLoginUserByEmailAsync(normalizedEmail, cancellationToken);
         Guid? userId = existingUser?.Id;
         var ivtn = await _invitationRepository.GetByEmailAndCompanyIdAsync(normalizedEmail, request.CompanyId, cancellationToken);
-        if(ivtn !=null && ivtn.Status !=InviationStatuses.Accepted)
-        {
-            ivtn.Expires = DateTime.UtcNow.AddDays(InvitationExpireDay);
-            ivtn.Role = request.Role;
-            ivtn.UserId = userId;
-            ivtn.Status = InviationStatuses.Pending;
-            await _invitationRepository.UpdateAsync(ivtn);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _mediator.Publish(new InvitationCreatedNotification(normalizedEmail, companyName, request.Role.ToString(), InvitationExpireDay), cancellationToken);
-            return new CreateInvitationResult(ivtn.Id);
-        }
+            if(ivtn !=null && ivtn.Status !=InviationStatuses.Accepted)
+            {
+                ivtn.Update(userId ?? Guid.Empty,
+                            email: null,
+                            expires: DateTime.UtcNow.AddDays(InvitationExpireDay),
+                            role: request.Role,
+                            expireDays: InvitationExpireDay,
+                            companyName: companyName);
+                await _invitationRepository.UpdateAsync(ivtn);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return new CreateInvitationResult(ivtn.Id);
+            }
         var invitation = new Domain.Entities.Invitation
         {
             Id = Guid.NewGuid(),
@@ -65,9 +66,9 @@ public class CreateInvitationCommandHandler : IRequestHandler<CreateInvitationCo
             UserId = userId
         };
 
+        invitation.CreateNew(request.Role, userId, InvitationExpireDay, companyName);
         await _invitationRepository.AddAsync(invitation, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvitationCreatedNotification(normalizedEmail, companyName, request.Role.ToString(), InvitationExpireDay), cancellationToken);
 
         return new CreateInvitationResult(invitation.Id);
     }

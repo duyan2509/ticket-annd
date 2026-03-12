@@ -2,10 +2,10 @@ using MediatR;
 using TicketAnnd.Application.Common;
 using Microsoft.Extensions.Configuration;
 using Hangfire;
+using TicketAnnd.Domain.Events;
 
 namespace TicketAnnd.Application.Invitation;
 
-public record InvitationCreatedNotification(string To, string CompanyName, string Role, int ExpireDays) : INotification;
 public class InvitationCreatedNotificationHandler : INotificationHandler<InvitationCreatedNotification>
 {
     private readonly IEmailSender _emailSender;
