@@ -43,7 +43,7 @@ public class TeamsController : ControllerBase
         return NoContent();
     }
     [HttpGet]
-    [OutputCache(PolicyName = "AuthCache", Tags = new[] { "Teams" })]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Teams" })]
     public async Task<IActionResult> GetByCompany(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -86,7 +86,7 @@ public class TeamsController : ControllerBase
 
 
     [HttpGet("{teamId:guid}/members")]
-    [OutputCache(PolicyName = "AuthCache", Tags = new[] { "Teams" })]
+    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Teams" })]
     public async Task<IActionResult> GetMembers([FromRoute] Guid teamId, [FromQuery] int page = 1, [FromQuery] int size = 10, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetTeamMembersQuery(teamId, page, size), cancellationToken);
