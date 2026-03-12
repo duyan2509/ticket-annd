@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketAnnd.Application.Tickets;
+using TicketAnnd.Domain.Repositories;
 using TicketAnnd.Domain.Enums;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -14,10 +15,14 @@ namespace TicketAnnd.Controllers;
 public class TicketsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ITicketRepository _ticketRepository;
+    private readonly ITeamRepository _teamRepository;
 
-    public TicketsController(IMediator mediator)
+    public TicketsController(IMediator mediator, ITicketRepository ticketRepository, ITeamRepository teamRepository)
     {
         _mediator = mediator;
+        _ticketRepository = ticketRepository;
+        _teamRepository = teamRepository;
     }
 
     [HttpGet("by-code")]
@@ -69,9 +74,173 @@ public class TicketsController : ControllerBase
         if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
             return Unauthorized("Not allow to access without company context.");
 
-        var result = await _mediator.Send(new AssignTeamCommand(companyId, ticketId, teamId), cancellationToken);
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var result = await _mediator.Send(new AssignTeamCommand(companyId, ticketId, teamId, userId), cancellationToken);
         return Created($"/api/tickets/{result}", new { id = result });
+    }
+
+    [HttpPost("{ticketId:guid}/pause")]
+    public async Task<IActionResult> Pause([FromRoute] Guid ticketId, [FromBody] PauseRequest request, CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var ticket = await _ticketRepository.GetTrackingByIdCompanyIdAsync(ticketId, companyId, cancellationToken);
+        if (ticket is null)
+            return NotFound();
+
+        var isCompanyAdmin = User.IsInRole(nameof(AppRoles.CompanyAdmin));
+        var isRaiser = ticket.RaiserId == userId;
+        var isAssignee = ticket.AssigneeId.HasValue && ticket.AssigneeId.Value == userId;
+        var isLeader = false;
+        if (ticket.TeamId.HasValue)
+        {
+            var member = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(userId, ticket.TeamId.Value, cancellationToken);
+            if (member != null)
+            {
+                var team = await _teamRepository.GetByIdAsync(ticket.TeamId.Value, cancellationToken);
+                if (team != null && team.LeaderId == member.Id)
+                    isLeader = true;
+            }
+        }
+
+        if (!(isCompanyAdmin || isRaiser || isAssignee || isLeader))
+            return Forbid();
+
+        var result = await _mediator.Send(new PauseTicketCommand(companyId, ticketId, request.PauseType, request.Reason, request.ResumeAt, userId), cancellationToken);
+        return Ok(new { id = result });
+    }
+
+    [HttpPost("{ticketId:guid}/continue")]
+    public async Task<IActionResult> Continue([FromRoute] Guid ticketId, CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var ticket = await _ticketRepository.GetTrackingByIdCompanyIdAsync(ticketId, companyId, cancellationToken);
+        if (ticket is null)
+            return NotFound();
+
+        var isCompanyAdmin = User.IsInRole(nameof(AppRoles.CompanyAdmin));
+        var isRaiser = ticket.RaiserId == userId;
+        var isAssignee = ticket.AssigneeId.HasValue && ticket.AssigneeId.Value == userId;
+        var isLeader = false;
+        if (ticket.TeamId.HasValue)
+        {
+            var member = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(userId, ticket.TeamId.Value, cancellationToken);
+            if (member != null)
+            {
+                var team = await _teamRepository.GetByIdAsync(ticket.TeamId.Value, cancellationToken);
+                if (team != null && team.LeaderId == member.Id)
+                    isLeader = true;
+            }
+        }
+
+        if (!(isCompanyAdmin || isRaiser || isAssignee || isLeader))
+            return Forbid();
+
+        var result = await _mediator.Send(new ContinueTicketCommand(companyId, ticketId, userId), cancellationToken);
+        return Ok(new { id = result });
+    }
+
+    [HttpPost("{ticketId:guid}/resolve")]
+    public async Task<IActionResult> Resolve([FromRoute] Guid ticketId, [FromBody] ResolveRequest request, CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var ticket = await _ticketRepository.GetTrackingByIdCompanyIdAsync(ticketId, companyId, cancellationToken);
+        if (ticket is null)
+            return NotFound();
+
+        var isCompanyAdmin = User.IsInRole(nameof(AppRoles.CompanyAdmin));
+        var isRaiser = ticket.RaiserId == userId;
+        var isAssignee = ticket.AssigneeId.HasValue && ticket.AssigneeId.Value == userId;
+        var isLeader = false;
+        if (ticket.TeamId.HasValue)
+        {
+            var member = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(userId, ticket.TeamId.Value, cancellationToken);
+            if (member != null)
+            {
+                var team = await _teamRepository.GetByIdAsync(ticket.TeamId.Value, cancellationToken);
+                if (team != null && team.LeaderId == member.Id)
+                    isLeader = true;
+            }
+        }
+
+        if (!(isCompanyAdmin || isRaiser || isAssignee || isLeader))
+            return Forbid();
+
+        var result = await _mediator.Send(new ResolveTicketCommand(companyId, ticketId, userId, request.Note), cancellationToken);
+        return Ok(new { id = result });
+    }
+
+    [HttpPost("{ticketId:guid}/member/{userId:guid}")]
+    public async Task<IActionResult> AssignMember([FromRoute] Guid ticketId, [FromRoute] Guid userId, CancellationToken cancellationToken)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var actorClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(actorClaim) || !Guid.TryParse(actorClaim, out var actorId))
+            return Unauthorized();
+
+        var ticket = await _ticketRepository.GetTrackingByIdCompanyIdAsync(ticketId, companyId, cancellationToken);
+        if (ticket is null)
+            return NotFound();
+
+        var isCompanyAdmin = User.IsInRole(nameof(AppRoles.CompanyAdmin));
+        var isLeader = false;
+        if (ticket.TeamId.HasValue)
+        {
+            var member = await _teamRepository.GetMemberByUserIdAndTeamIdAsync(actorId, ticket.TeamId.Value, cancellationToken);
+            if (member != null)
+            {
+                var team = await _teamRepository.GetByIdAsync(ticket.TeamId.Value, cancellationToken);
+                if (team != null && team.LeaderId == member.Id)
+                    isLeader = true;
+            }
+        }
+
+        if (!(isCompanyAdmin || isLeader))
+            return Forbid();
+
+        var result = await _mediator.Send(new AssignMemberToTicketCommand(companyId, ticketId, userId, actorId), cancellationToken);
+        return Created($"/api/tickets/{result}", new { id = result });
+    }
+
+    [HttpGet("{ticketId:guid}/logs")]
+    public async Task<IActionResult> GetLogs([FromRoute] Guid ticketId, [FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
+    {
+        var companyIdClaim = User.FindFirstValue("company_id");
+        if (string.IsNullOrEmpty(companyIdClaim) || !Guid.TryParse(companyIdClaim, out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        var result = await _mediator.Send(new GetTicketLogsQuery(companyId, ticketId, page, size), cancellationToken);
+        return Ok(result);
     }
 }
 
 public record CreateTicketRequest(Guid CategoryId, Guid SlaRuleId, string Subject, string? Body, Guid? TeamId = null);
+
+public record PauseRequest(string PauseType, string Reason, DateTime? ResumeAt);
+public record ResolveRequest(string? Note);

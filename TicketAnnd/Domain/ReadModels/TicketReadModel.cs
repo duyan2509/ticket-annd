@@ -7,6 +7,8 @@ public class TicketReadModel
     public string RaiserName { get; set; }
     public Guid? TeamId { get; set; }
     public string? TeamName { get; set; }
+    public Guid? AssigneeId { get; set; }
+    public string? AssigneeName { get; set; }
     public Guid CategoryId { get; set; }
     public string CategoryName { get; set; }
     public string Subject { get; set; }

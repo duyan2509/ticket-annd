@@ -74,6 +74,8 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             SlaResolutionMinutes = slaRule.ResolutionMinutes,
         };
 
+        // attach create action event so it will be published after DB commit
+        ticket.AddActionEvent("Create", request.RaiserId, fromStatus: null, toStatus: ticket.Status.ToString(), note: null);
         await _ticketRepository.AddAsync(ticket,cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

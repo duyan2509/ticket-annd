@@ -70,6 +70,10 @@ public class TicketRepository : ITicketRepository
                 TeamName = t.TeamId == null
                     ? null
                     : _context.Teams.Where(tm => tm.Id == t.TeamId).Select(tm => tm.Name).FirstOrDefault(),
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.AssigneeId == null
+                    ? null
+                    : _context.Users.Where(u => u.Id == t.AssigneeId).Select(u => u.Email).FirstOrDefault(),
                 CategoryId = t.CategoryId,
                 CategoryName =
                     _context.Categories.Where(c => c.Id == t.CategoryId).Select(c => c.Name ?? string.Empty)
@@ -124,6 +128,8 @@ public class TicketRepository : ITicketRepository
                 RaiserName = _context.Users.Where(u => u.Id == t.RaiserId).Select(u => u.Email ?? string.Empty).FirstOrDefault() ?? string.Empty,
                 TeamId = t.TeamId,
                 TeamName = t.TeamId == null ? null : _context.Teams.Where(tm => tm.Id == t.TeamId).Select(tm => tm.Name).FirstOrDefault(),
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.AssigneeId == null ? null : _context.Users.Where(u => u.Id == t.AssigneeId).Select(u => u.Email).FirstOrDefault(),
                 CategoryId = t.CategoryId,
                 CategoryName = _context.Categories.Where(c => c.Id == t.CategoryId).Select(c => c.Name ?? string.Empty).FirstOrDefault() ?? string.Empty,
                 Subject = t.Subject,

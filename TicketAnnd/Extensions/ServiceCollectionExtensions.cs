@@ -18,6 +18,7 @@ using TicketAnnd.Infrastructure.Persistence.Repositories;
 using TicketAnnd.Infrastructure.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
+using TicketAnnd.Infrastructure.Persistence.Mongo;
 namespace TicketAnnd.Extensions;
 
 public static class ServiceCollectionExtensions
@@ -94,6 +95,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<ITicketLogRepository, TicketLogRepository>();
         return services;
     }
 
@@ -101,6 +103,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IEmailSender, MailtrapEmailSender>();
+        // Ticket logging is handled by `TicketActionNotificationHandler` which writes to `ITicketLogRepository`.
         return services;
     }
 

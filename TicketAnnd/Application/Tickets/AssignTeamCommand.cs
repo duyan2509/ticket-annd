@@ -1,10 +1,14 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Repositories;
+using MediatR;
+using TicketAnnd.Domain.Enums;
+using TicketAnnd.Domain.ReadModels;
 
 namespace TicketAnnd.Application.Tickets;
 
-public record AssignTeamCommand(Guid CompanyId, Guid TicketId, Guid TeamId) : IRequest<Guid>;
+public record AssignTeamCommand(Guid CompanyId, Guid TicketId, Guid TeamId, Guid ActorId) : IRequest<Guid>;
 
 public class AsssignTeamCommandHandler : IRequestHandler<AssignTeamCommand,Guid>
 {
@@ -27,9 +31,12 @@ public class AsssignTeamCommandHandler : IRequestHandler<AssignTeamCommand,Guid>
         var ticket = await _ticketRepository.GetTrackingByIdCompanyIdAsync(request.TicketId, request.CompanyId, cancellationToken);
         if(ticket is null)
             throw new BadRequestException("Ticket not found in company");
-        ticket.TeamId = request.TeamId;
+        var fromStatus = ticket.Status;
+        ticket.AssignTeam(request.TeamId, request.ActorId, note: $"Assigned to team {request.TeamId}");
+
         await _ticketRepository.UpdateAsync(ticket);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         return ticket.Id;
     }
 }
