@@ -115,7 +115,7 @@ public class TicketsController : ControllerBase
         if (!(isCompanyAdmin || isRaiser || isAssignee || isLeader))
             return Forbid();
 
-        var result = await _mediator.Send(new PauseTicketCommand(companyId, ticketId, request.PauseType, request.Reason, request.ResumeAt, userId), cancellationToken);
+        var result = await _mediator.Send(new PauseTicketCommand(companyId, ticketId, request.PauseType.ToString(), request.Reason, request.ResumeAt, userId), cancellationToken);
         return Ok(new { id = result });
     }
 
@@ -242,5 +242,5 @@ public class TicketsController : ControllerBase
 
 public record CreateTicketRequest(Guid CategoryId, Guid SlaRuleId, string Subject, string? Body, Guid? TeamId = null);
 
-public record PauseRequest(string PauseType, string Reason, DateTime? ResumeAt);
+public record PauseRequest(TicketPauseType PauseType, string Reason, DateTime? ResumeAt);
 public record ResolveRequest(string? Note);
