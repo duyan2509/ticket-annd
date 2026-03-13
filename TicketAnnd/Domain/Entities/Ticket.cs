@@ -34,7 +34,7 @@ public class Ticket:BaseEntity
     public virtual ICollection<TicketPause> TicketPauses { get; set; } = new List<TicketPause>();
     public NpgsqlTsVector SearchVector { get; set; }
 
-    public void AddActionEvent(string action, Guid actorId, string? fromStatus = null, string? toStatus = null, string? note = null, DateTime? timestamp = null)
+    public void AddActionEvent(string action, Guid actorId, string? actorName = null, Guid? targetId = null, string? targetName = null, string? fromStatus = null, string? toStatus = null, string? note = null, DateTime? timestamp = null)
     {
         AddDomainEvent(new TicketActionNotification(
             Guid.NewGuid(),
@@ -44,41 +44,44 @@ public class Ticket:BaseEntity
             fromStatus,
             toStatus,
             actorId,
+            actorName,
+            targetId,
+            targetName,
             note,
             timestamp ?? DateTime.UtcNow
         ));
     }
 
-    public void AssignTeam(Guid teamId, Guid actorId, string? note = null)
+    public void AssignTeam(Guid teamId, Guid actorId, string? actorName = null, string? targetName = null, string? note = null)
     {
         var from = Status.ToString();
         TeamId = teamId;
         Status = TicketStatuses.InProgress;
-        AddActionEvent("AssignTeam", actorId, fromStatus: from, toStatus: Status.ToString(), note: note);
+        AddActionEvent("AssignTeam", actorId, actorName: actorName, targetId: teamId, targetName: targetName, fromStatus: from, toStatus: Status.ToString(), note: note);
     }
 
-    public void AssignMember(Guid assigneeId, Guid actorId, string? note = null)
+    public void AssignMember(Guid assigneeId, Guid actorId, string? actorName = null, string? targetName = null, string? note = null)
     {
         var from = Status.ToString();
         AssigneeId = assigneeId;
         Status = TicketStatuses.InProgress;
-        AddActionEvent("AssignMember", actorId, fromStatus: from, toStatus: Status.ToString(), note: note);
+        AddActionEvent("AssignMember", actorId, actorName: actorName, targetId: assigneeId, targetName: targetName, fromStatus: from, toStatus: Status.ToString(), note: note);
     }
 
-    public void Continue(Guid actorId, string? note = null)
+    public void Continue(Guid actorId, string? actorName = null, string? note = null)
     {
         var from = Status.ToString();
             var lastPause = TicketPauses.OrderByDescending(p => p.PauseAt).FirstOrDefault();
-            if (lastPause != null && lastPause.ResumeAt == DateTime.MinValue)
+            if (lastPause != null)
             {
-                lastPause.ResumeAt = DateTime.UtcNow;
+                note = $"Continue from pause at {lastPause.PauseAt:u} with reason: {lastPause.Reason}";
             }
 
             Status = TicketStatuses.InProgress;
-            AddActionEvent("Continue", actorId, fromStatus: from, toStatus: Status.ToString(), note: note);
+                AddActionEvent("Continue", actorId, actorName: actorName, fromStatus: from, toStatus: Status.ToString(), note: note);
     }
 
-    public void Pause(Guid actorId, string pauseType, string reason, DateTime? resumeAt = null)
+    public void Pause(Guid actorId, string pauseType, string reason, string? actorName = null)
     {
         var from = Status.ToString();
         TicketStatuses targetStatus;
@@ -93,7 +96,6 @@ public class Ticket:BaseEntity
         {
             TicketId = Id,
             PauseAt = DateTime.UtcNow,
-            ResumeAt = resumeAt ?? DateTime.MinValue,
             Reason = reason ?? string.Empty,
             PauseById = actorId
         };
@@ -101,15 +103,15 @@ public class Ticket:BaseEntity
         TicketPauses.Add(pause);
         Status = targetStatus;
 
-        AddActionEvent("Pause", actorId, fromStatus: from, toStatus: Status.ToString(), note: reason);
+        AddActionEvent("Pause", actorId, actorName: actorName, fromStatus: from, toStatus: Status.ToString(), note: reason);
     }
 
-    public void Resolve(Guid actorId, string? note = null)
+    public void Resolve(Guid actorId, string? actorName = null, string? note = null)
     {
         var from = Status.ToString();
         Status = TicketStatuses.Resolved;
         ResolvedAt = DateTime.UtcNow;
-        AddActionEvent("Resolve", actorId, fromStatus: from, toStatus: Status.ToString(), note: note);
+        AddActionEvent("Resolve", actorId, actorName: actorName, fromStatus: from, toStatus: Status.ToString(), note: note);
     }
 }
 

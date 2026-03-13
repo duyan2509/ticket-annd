@@ -12,5 +12,8 @@ public class TicketLogDocument
     public string ToStatus { get; set; }
     public Guid ActorId { get; set; }
     public string? Note { get; set; }
+    public string? ActorName { get; set; }
+    public Guid? TargetId { get; set; }
+    public string? TargetName { get; set; }
     public DateTime Timestamp { get; set; }
 }

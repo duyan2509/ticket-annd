@@ -25,6 +25,9 @@ public class TicketActionNotificationHandler : INotificationHandler<TicketAction
             FromStatus = notification.FromStatus,
             ToStatus = notification.ToStatus,
             ActorId = notification.ActorId,
+            ActorName = notification.ActorName,
+            TargetId = notification.TargetId,
+            TargetName = notification.TargetName,
             Note = notification.Note,
             Timestamp = notification.Timestamp == default ? DateTime.UtcNow : notification.Timestamp
         };

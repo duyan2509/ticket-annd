@@ -54,7 +54,9 @@ public class TeamRepository : ITeamRepository
 
     public async Task<TeamMember?> GetMemberByUserIdAndTeamIdAsync(Guid userId, Guid teamId, CancellationToken cancellationToken = default)
     {
-        return await _context.TeamMembers.FirstOrDefaultAsync(x => x.UserId == userId && x.TeamId == teamId, cancellationToken);
+        return await _context.TeamMembers
+            .Include(tm => tm.User)
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.TeamId == teamId, cancellationToken);
     }
 
     public async Task<MemberPagedResultReadModel> GetMembersByTeamIdAsync(Guid teamId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)

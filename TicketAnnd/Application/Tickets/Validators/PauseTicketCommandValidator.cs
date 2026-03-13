@@ -23,8 +23,5 @@ public class PauseTicketCommandValidator : AbstractValidator<PauseTicketCommand>
             .NotEmpty().WithMessage("Reason is required")
             .MaximumLength(2000);
 
-        RuleFor(x => x.ResumeAt)
-            .Must(dt => dt == null || dt > DateTime.UtcNow.AddMinutes(-1))
-            .WithMessage("ResumeAt must be in the future if specified");
     }
 }
