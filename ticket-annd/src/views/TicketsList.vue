@@ -4,49 +4,59 @@
         <main class="max-w-4xl mx-auto p-6">
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-2xl font-semibold mb-4">Tickets</h1>
-                <div>
+                <div class="flex items-center gap-2">
+                    <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'px-3 py-1 rounded bg-blue-600 text-white' : 'px-3 py-1 rounded bg-gray-200'">Ticket List</button>
+                    <button @click="viewMode = 'create'" :class="viewMode === 'create' ? 'px-3 py-1 rounded bg-blue-600 text-white' : 'px-3 py-1 rounded bg-gray-200'">Raise Ticket</button>
                     <button @click="goGeneral" class="px-3 py-1 bg-gray-200 rounded">Back to Dashboard</button>
                 </div>
             </div>
-            <div class="bg-white rounded shadow p-4">
-                <h2 class="text-lg font-medium mb-3">Create ticket</h2>
-                <div class="grid grid-cols-1 gap-3">
-                    <select v-model="form.categoryId" class="px-2 py-2 border rounded">
-                        <option value="">Select category</option>
-                        <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
-                    </select>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div v-if="viewMode === 'create'" class="bg-white rounded shadow p-4 md:col-span-3">
+                    <h2 class="text-lg font-medium mb-3">Create ticket</h2>
+                    <div class="grid grid-cols-1 gap-3">
+                        <select v-model="form.categoryId" class="px-2 py-2 border rounded">
+                            <option value="">Select category</option>
+                            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select>
 
 
-                    <select v-model="form.slaRuleId" class="px-2 py-2 border rounded">
-                        <option value="">Select SLA rule</option>
-                        <option v-for="r in rules" :key="r.id" :value="r.id">{{ r.name }}</option>
-                    </select>
+                        <select v-model="form.slaRuleId" class="px-2 py-2 border rounded">
+                            <option value="">Select SLA rule</option>
+                            <option v-for="r in rules" :key="r.id" :value="r.id">{{ r.name }}</option>
+                        </select>
 
-                    <select v-if="userContext?.currentRole == AppRoles.CompanyAdmin" v-model="form.teamId"
-                        class="px-2 py-2 border rounded">
-                        <option value="">Assign to team (optional)</option>
-                        <option v-for="t in teams" :key="t.teamId" :value="t.teamId">{{ t.name }}</option>
-                    </select>
+                        <select v-if="userContext?.currentRole == AppRoles.CompanyAdmin" v-model="form.teamId"
+                            class="px-2 py-2 border rounded">
+                            <option value="">Assign to team (optional)</option>
+                            <option v-for="t in teams" :key="t.teamId" :value="t.teamId">{{ t.name }}</option>
+                        </select>
 
-                    <input v-model="form.subject" placeholder="Subject" class="px-2 py-2 border rounded" />
-                    <textarea v-model="form.body" placeholder="Body (optional)"
-                        class="px-2 py-2 border rounded h-28"></textarea>
+                        <input v-model="form.subject" placeholder="Subject" class="px-2 py-2 border rounded" />
+                        <textarea v-model="form.body" placeholder="Body (optional)"
+                            class="px-2 py-2 border rounded h-28"></textarea>
 
-                    <div class="flex items-center gap-2">
-                        <button @click="onCreate" class="px-3 py-2 bg-blue-600 text-white rounded">Create</button>
-                        <div v-if="loading" class="text-sm text-gray-600">Creating...</div>
-                        <div v-if="success" class="text-sm text-green-600">Created successfully.</div>
-                        <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
+                        <div class="flex items-center gap-2">
+                            <button @click="onCreate" class="px-3 py-2 bg-blue-600 text-white rounded">Create</button>
+                            <div v-if="loading" class="text-sm text-gray-600">Creating...</div>
+                            <div v-if="success" class="text-sm text-green-600">Created successfully.</div>
+                            <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Tickets list -->
-            <div class="mt-6 bg-white rounded shadow p-4">
+            <div v-if="viewMode === 'list'" class="mt-6 bg-white rounded shadow p-4 md:col-span-2">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-medium">Tickets list</h2>
                     <div class="flex items-center gap-2">
                         <input v-model="subjectFilter" placeholder="Search subject" class="px-2 py-1 border rounded" />
+                        <select v-model="teamFilter" class="px-2 py-1 border rounded">
+                            <option value="">All teams</option>
+                            <option value="__unassigned">Unassigned</option>
+                            <option v-for="t in teams" :key="t.teamId" :value="t.teamId">{{ t.name }}</option>
+                        </select>
                         <select v-model="statusFilter" class="px-2 py-1 border rounded">
                             <option value="">All status</option>
                             <option value="open">Open</option>
@@ -112,21 +122,22 @@
             </div>
         </main>
     </div>
-<template v-if="showAssignModal">
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded p-4 w-full max-w-md">
-            <h3 class="text-lg font-medium mb-2">Assign team</h3>
-            <select v-model="selectedTeamId" class="w-full px-2 py-2 border rounded mb-3">
-                <option value="">Select team</option>
-                <option v-for="t in teams" :key="t.teamId" :value="t.teamId">{{ t.name }}</option>
-            </select>
-            <div class="flex justify-end gap-2">
-                <button @click="closeAssignModal" class="px-3 py-1 bg-gray-200 rounded">Cancel</button>
-                <button @click="assignFromModal" class="px-3 py-1 bg-blue-600 text-white rounded">Assign</button>
+
+    <template v-if="showAssignModal">
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded p-4 w-full max-w-md">
+                <h3 class="text-lg font-medium mb-2">Assign team</h3>
+                <select v-model="selectedTeamId" class="w-full px-2 py-2 border rounded mb-3">
+                    <option value="">Select team</option>
+                    <option v-for="t in teams" :key="t.teamId" :value="t.teamId">{{ t.name }}</option>
+                </select>
+                <div class="flex justify-end gap-2">
+                    <button @click="closeAssignModal" class="px-3 py-1 bg-gray-200 rounded">Cancel</button>
+                    <button @click="assignFromModal" class="px-3 py-1 bg-blue-600 text-white rounded">Assign</button>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 </template>
 
 
@@ -161,8 +172,10 @@ const listLoading = ref(false)
 const listError = ref('')
 const subjectFilter = ref('')
 const statusFilter = ref('')
+const teamFilter = ref('')
 
 const form = ref({ categoryId: '', slaRuleId: '', teamId: '', subject: '', body: '' })
+const viewMode = ref<'list' | 'create'>('list')
 const loading = ref(false)
 const success = ref(false)
 const error = ref('')
@@ -258,7 +271,8 @@ async function loadTickets() {
         if (companyId.value) params.companyId = companyId.value
         if (subjectFilter.value) params.subject = subjectFilter.value
         if (statusFilter.value) params.status = statusFilter.value
-        if (form.value.teamId) params.teamId = form.value.teamId
+        if (teamFilter.value === '__unassigned') params.unassigned = true
+        else if (teamFilter.value) params.teamId = teamFilter.value
         if (form.value.categoryId) params.categoryId = form.value.categoryId
 
         const data = await getTickets(params)
