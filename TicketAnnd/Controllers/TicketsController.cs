@@ -54,13 +54,12 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Tickets" })]
-    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid? teamId = null, [FromQuery] string? status = null, [FromQuery] Guid? categoryId = null, [FromQuery] string? subject = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid? teamId = null, [FromQuery] string? status = null, [FromQuery] Guid? categoryId = null, [FromQuery] string? subject = null, [FromQuery] bool? unassigned = null, CancellationToken cancellationToken = default)
     {
         if (!TryGetCompanyId(out var companyId))
             return Unauthorized("Not allow to access without company context.");
 
-        var result = await _mediator.Send(new GetTicketsQuery(companyId, page, pageSize, teamId, status, categoryId, subject), cancellationToken);
+        var result = await _mediator.Send(new GetTicketsQuery(companyId, page, pageSize, teamId, status, categoryId, subject, unassigned), cancellationToken);
         return Ok(result);
     }
 

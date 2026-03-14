@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using TicketAnnd.Infrastructure.Persistence;
 namespace TicketAnnd.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TicketAnndDbContext))]
-    partial class TicketAnndDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260314095913_AddTicketIndexes")]
+    partial class AddTicketIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -509,10 +512,6 @@ namespace TicketAnnd.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "IsDeleted", "CategoryId")
                         .HasDatabaseName("idx_tickets_company_deleted_category");
-
-                    b.HasIndex("CompanyId", "IsDeleted", "CreatedAt")
-                        .HasDatabaseName("idx_tickets_company_deleted_createdat")
-                        .HasFilter("\"IsDeleted\" = false");
 
                     b.HasIndex("CompanyId", "IsDeleted", "Status")
                         .HasDatabaseName("idx_tickets_company_deleted_status");

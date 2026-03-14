@@ -26,10 +26,22 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.HasIndex(t => new { t.CompanyId, t.TicketCode })
             .IsUnique();
 
+        builder.HasIndex(t => new { t.CompanyId, t.IsDeleted, t.TeamId, t.CreatedAt })
+            .HasDatabaseName("idx_tickets_company_deleted_team_createdat");
+
+        builder.HasIndex(t => new { t.CompanyId, t.IsDeleted, t.CategoryId })
+            .HasDatabaseName("idx_tickets_company_deleted_category");
+
+        builder.HasIndex(t => new { t.CompanyId, t.IsDeleted, t.Status })
+            .HasDatabaseName("idx_tickets_company_deleted_status");
+
         builder.HasOne(t => t.Company)
             .WithMany(c => c.Tickets)
             .HasForeignKey(t => t.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(t => new { t.CompanyId, t.IsDeleted, t.CreatedAt })
+            .HasFilter("\"IsDeleted\" = false") 
+            .HasDatabaseName("idx_tickets_company_deleted_createdat");
 
         builder.HasOne(t => t.Raiser)
             .WithMany()

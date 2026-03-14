@@ -43,6 +43,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddRepositories();
         services.AddApplicationServices(configuration);
+        // Register OutboxProcessor for Hangfire-invoked processing
+        services.AddScoped<OutboxProcessor>();
 
         return services;
     }

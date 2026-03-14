@@ -16,22 +16,8 @@ public class TicketActionNotificationHandler : INotificationHandler<TicketAction
 
     public async Task Handle(TicketActionNotification notification, CancellationToken cancellationToken)
     {
-        var doc = new TicketLogDocument
-        {
-            Id = notification.Id == Guid.Empty ? Guid.NewGuid() : notification.Id,
-            TicketId = notification.TicketId,
-            CompanyId = notification.CompanyId,
-            Action = notification.Action,
-            FromStatus = notification.FromStatus,
-            ToStatus = notification.ToStatus,
-            ActorId = notification.ActorId,
-            ActorName = notification.ActorName,
-            TargetId = notification.TargetId,
-            TargetName = notification.TargetName,
-            Note = notification.Note,
-            Timestamp = notification.Timestamp == default ? DateTime.UtcNow : notification.Timestamp
-        };
-
-        await _repository.InsertAsync(doc, cancellationToken);
+        // Migrated ticket action persistence to the outbox pattern.
+        // Background processor will move outbox payloads to MongoDB.
+        await Task.CompletedTask;
     }
 }

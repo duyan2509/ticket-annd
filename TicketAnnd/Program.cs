@@ -3,6 +3,9 @@ using Serilog;
 using System.Security.Claims;
 using TicketAnnd;
 using TicketAnnd.Extensions;
+using Hangfire;
+using Hangfire.Common;
+using TicketAnnd.Infrastructure.Services;
 using TicketAnnd.OutputCaching;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +59,17 @@ await app.SeedSuperAdminAsync();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// Schedule Hangfire recurring job to process outbox messages every minute using the service-based API
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    recurringJobManager.AddOrUpdate(
+        "outbox-processor",
+        Job.FromExpression<OutboxProcessor>(x => x.ProcessPendingAsync()),
+        Cron.Minutely(),
+        new RecurringJobOptions());
 }
 
 app.UseHttpsRedirection();
