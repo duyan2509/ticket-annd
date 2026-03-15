@@ -26,7 +26,7 @@ public class CreateSlaPolicyCommandHandler : IRequestHandler<CreateSlaPolicyComm
         var policy = new TicketAnnd.Domain.Entities.SlaPolicy { Id = Guid.NewGuid(), CompanyId = request.CompanyId, Name = request.Name, IsActive = false };
         await _repo.AddAsync(policy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Sla"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:sla"), cancellationToken);
         return policy.Id;
     }
 }

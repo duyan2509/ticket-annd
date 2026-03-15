@@ -1,5 +1,6 @@
 using System.Security.Authentication;
 using MediatR;
+using Microsoft.AspNetCore.OutputCaching;
 using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Entities;
@@ -13,20 +14,23 @@ public class SwitchRoleCommandHandler : IRequestHandler<SwitchRoleCommand, Login
     private readonly IUserCompanyRoleRepository _userCompanyRoleRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IJwtService _jwtService;
-    private readonly IUnitOfWork _unitOfWork;
-
+        private readonly IUnitOfWork _unitOfWork;
+    private readonly IOutputCacheStore _outputCacheStore;
     public SwitchRoleCommandHandler(
         IUserRepository userRepository,
         IUserCompanyRoleRepository userCompanyRoleRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IJwtService jwtService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IOutputCacheStore outputCacheStore
+        )
     {
         _userRepository = userRepository;
         _userCompanyRoleRepository = userCompanyRoleRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtService = jwtService;
         _unitOfWork = unitOfWork;
+        _outputCacheStore = outputCacheStore;
     }
 
     public async Task<LoginResult> Handle(SwitchRoleCommand request, CancellationToken cancellationToken)
@@ -51,7 +55,7 @@ public class SwitchRoleCommandHandler : IRequestHandler<SwitchRoleCommand, Login
         };
         await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        await _outputCacheStore.EvictByTagAsync($"Users:{request.UserId}", cancellationToken);
         return new LoginResult(accessToken, refreshTokenEntity.Token);
     }
 }

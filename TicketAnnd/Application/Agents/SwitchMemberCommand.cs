@@ -39,7 +39,7 @@ public class SwitchMemberCommandHandler : IRequestHandler<SwitchMemberCommand,Un
             throw new BadRequestException("Team leader cannot be switched to another team");
         tm.TeamId = request.ToTeamId;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:teams"), cancellationToken);
 
         return Unit.Value;
     }

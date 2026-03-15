@@ -40,7 +40,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet("by-code")]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Tickets" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> GetByCode([FromQuery] string? ticketCode, CancellationToken cancellationToken = default)
     {
         if (!TryGetCompanyId(out var companyId))

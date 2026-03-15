@@ -57,7 +57,7 @@ public class AssignMemberCommandHandler : IRequestHandler<AssignMemberCommand,Un
 
         await _teamRepository.AddAsync(tm, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:teams"), cancellationToken);
 
         return Unit.Value;
     }

@@ -31,7 +31,7 @@ public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, Creat
 
         await _teamRepository.AddAsync(team, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:teams"), cancellationToken);
 
         return new CreateTeamResult(team.Id, team.Name);
     }

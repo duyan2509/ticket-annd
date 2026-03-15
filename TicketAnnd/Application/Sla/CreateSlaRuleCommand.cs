@@ -32,7 +32,7 @@ public class CreateSlaRuleCommandHandler : IRequestHandler<CreateSlaRuleCommand,
         var rule = new SlaRule { Name= request.Name, SlaPolicyId = request.SlaPolicyId, FirstResponseMinutes = request.FirstResponseMinutes, ResolutionMinutes = request.ResolutionMinutes };
         policy.AddRule(rule);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Sla"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:sla"), cancellationToken);
         return rule.Id;
     }
 }

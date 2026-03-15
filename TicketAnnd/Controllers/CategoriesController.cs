@@ -21,7 +21,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Categories" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -34,7 +34,7 @@ public class CategoriesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = nameof(TicketAnnd.Domain.Enums.AppRoles.CompanyAdmin))]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Categories" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");

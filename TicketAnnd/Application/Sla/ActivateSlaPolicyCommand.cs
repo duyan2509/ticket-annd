@@ -30,7 +30,7 @@ public class ActivateSlaPolicyCommandHandler : IRequestHandler<ActivateSlaPolicy
         if (existing.IsActive) throw new BadRequestException("Policy already activated");
         await _repo.SetActiveAsync(request.PolicyId, request.CompanyId, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Sla"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:sla"), cancellationToken);
         return Unit.Value;
     }
 }

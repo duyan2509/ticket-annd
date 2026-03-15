@@ -78,7 +78,7 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("me")]
-    [OutputCache(PolicyName = "UserCache", Tags = new[] { "Users" })]
+    [OutputCache(PolicyName = "UserCache")]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");

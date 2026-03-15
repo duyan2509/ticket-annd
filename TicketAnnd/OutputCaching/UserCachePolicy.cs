@@ -18,9 +18,10 @@ public sealed class UserCachePolicy : IOutputCachePolicy
         context.CacheVaryByRules.QueryKeys = "*";
 
         var userId = context.HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                     ?? context.HttpContext.User?.FindFirst("sub")?.Value
-                     ?? string.Empty;
+                 ?? context.HttpContext.User?.FindFirst("sub")?.Value
+                 ?? string.Empty;
         context.CacheVaryByRules.VaryByValues["user"] = userId;
+        context.CacheVaryByRules.VaryByValues["userId"] = userId;
 
         context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(60);
 
@@ -46,6 +47,22 @@ public sealed class UserCachePolicy : IOutputCachePolicy
         {
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;
+        }
+
+        var userId = context.HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? context.HttpContext.User?.FindFirst("sub")?.Value
+                     ?? string.Empty;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            var path = context.HttpContext.Request.Path.Value ?? string.Empty;
+            if (path.StartsWith("/api/auth/me", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"Users:{userId}");
+            }
+            else if (path.StartsWith("/api/invitations/me", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"Users:{userId}:invitations");
+            }
         }
 
         return ValueTask.CompletedTask;

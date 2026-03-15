@@ -31,7 +31,7 @@ public class UpdateSlaPolicyCommandHandler : IRequestHandler<UpdateSlaPolicyComm
         existing.Name = request.Name;
         await _repo.UpdateAsync(existing, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Sla"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:sla"), cancellationToken);
         return Unit.Value;
     }
 }

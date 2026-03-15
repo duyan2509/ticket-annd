@@ -35,7 +35,7 @@ public class InvitationsController : ControllerBase
     }
 
     [HttpGet("me")]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Invitations" })]
+    [OutputCache(PolicyName = "UserCache")]
     public async Task<IActionResult> GetByEmail([FromQuery] string? status = null, [FromQuery] string? companyName = null, [FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
     {
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
@@ -84,7 +84,7 @@ public class InvitationsController : ControllerBase
 
     [HttpGet("company")]
     [Authorize(Roles = nameof(AppRoles.CompanyAdmin))]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Invitations" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> GetByCompany([FromQuery] int page = 1, [FromQuery] int size = 50, CancellationToken cancellationToken = default)
     {
         foreach (var header in Request.Headers)

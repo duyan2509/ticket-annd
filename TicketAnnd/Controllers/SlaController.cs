@@ -23,7 +23,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("rules")]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> GetRulesForActivePolicy(CancellationToken cancellationToken)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -36,7 +36,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("policies")]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> GetPolicies([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
         var companyIdClaim = User.FindFirstValue("company_id");
@@ -84,7 +84,7 @@ public class SlaController : ControllerBase
     }
 
     [HttpGet("policies/{id:guid}/rules")]
-    [OutputCache(PolicyName = "CompCache", Tags = new[] { "Sla" })]
+    [OutputCache(PolicyName = "CompCache")]
     public async Task<IActionResult> GetRules([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSlaRulesByPolicyQuery(id), cancellationToken);

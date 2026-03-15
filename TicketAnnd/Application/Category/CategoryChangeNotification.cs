@@ -19,6 +19,7 @@ public class CategoryChangeNotificationHandler:INotificationHandler<CategoryChan
     {
         var key = $"categories:{notification.CompanyId}";
         await _cache.RemoveAsync(key, cancellationToken);
-        await _outputCacheStore.EvictByTagAsync("Categories", cancellationToken);
+        // evict company-scoped categories tag
+        await _outputCacheStore.EvictByTagAsync($"company:{notification.CompanyId}:categories", cancellationToken);
     }
 }

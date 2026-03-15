@@ -32,7 +32,7 @@ public class SetTeamLeaderCommandHandler : IRequestHandler<SetTeamLeaderCommand,
         if (member == null) throw new NotFoundException("Team member not found");
         team.SetLeader(member.Id);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:teams"), cancellationToken);
 
         return Unit.Value;
     }

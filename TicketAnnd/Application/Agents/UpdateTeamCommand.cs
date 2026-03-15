@@ -30,7 +30,7 @@ public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, Unit>
         team.Name = request.Name?.Trim() ?? string.Empty;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new InvalidateOutputCacheNotification("Teams"), cancellationToken);
+        await _mediator.Publish(new InvalidateOutputCacheNotification($"company:{request.CompanyId}:teams"), cancellationToken);
 
         return Unit.Value;
     }

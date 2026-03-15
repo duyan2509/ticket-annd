@@ -18,6 +18,7 @@ public sealed class CompanyCachePolicy : IOutputCachePolicy
 
         var companyId = context.HttpContext.User?.FindFirst("company_id")?.Value ?? string.Empty;
         context.CacheVaryByRules.VaryByValues["company"] = companyId;
+        context.CacheVaryByRules.VaryByValues["companyId"] = companyId;
 
         context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(60);
 
@@ -43,6 +44,29 @@ public sealed class CompanyCachePolicy : IOutputCachePolicy
         {
             context.AllowCacheStorage = false;
             return ValueTask.CompletedTask;
+        }
+
+        // add company-scoped tags based on request path so we can evict per-company
+        var companyId = context.HttpContext.User?.FindFirst("company_id")?.Value ?? string.Empty;
+        if (!string.IsNullOrEmpty(companyId))
+        {
+            var path = context.HttpContext.Request.Path.Value ?? string.Empty;
+            if (path.StartsWith("/api/categories", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"company:{companyId}:categories");
+            }
+            else if (path.StartsWith("/api/teams", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"company:{companyId}:teams");
+            }
+            else if (path.StartsWith("/api/sla", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"company:{companyId}:sla");
+            }
+            else if (path.StartsWith("/api/invitations/company", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Tags.Add($"company:{companyId}:invitations");
+            }
         }
 
         return ValueTask.CompletedTask;
