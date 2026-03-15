@@ -135,6 +135,22 @@ public class TicketsController : ControllerBase
         return Ok(new { id = result });
     }
 
+    [HttpPost("{ticketId:guid}/start")]
+    public async Task<IActionResult> Start([FromRoute] Guid ticketId, CancellationToken cancellationToken)
+    {
+        if (!TryGetCompanyId(out var companyId))
+            return Unauthorized("Not allow to access without company context.");
+
+        if (!TryGetUserId(out var userId))
+            return Unauthorized();
+
+        var actorEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
+
+        var result = await _mediator.Send(new StartTicketCommand(companyId, ticketId, userId, actorEmail), cancellationToken);
+        return Ok(new { id = result });
+    }
+
+
     [HttpPost("{ticketId:guid}/member/{userId:guid}")]
     public async Task<IActionResult> AssignMember([FromRoute] Guid ticketId, [FromRoute] Guid userId, CancellationToken cancellationToken)
     {

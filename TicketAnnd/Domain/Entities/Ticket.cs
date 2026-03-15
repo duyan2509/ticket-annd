@@ -4,6 +4,7 @@ using TicketAnnd.Domain.Enums;
 using NanoidDotNet;
 using NpgsqlTypes;
 using TicketAnnd.Domain.Events;
+using TicketAnnd.Domain.Services;
 namespace TicketAnnd.Domain.Entities;
 
 public class Ticket:BaseEntity
@@ -111,7 +112,16 @@ public class Ticket:BaseEntity
         var from = Status.ToString();
         Status = TicketStatuses.Resolved;
         ResolvedAt = DateTime.UtcNow;
+
+        var totalResolution = BusinessHourCalculator.GetWorkingMinutesBetween(CreatedAt, ResolvedAt);
+        var firstResponseMinutes = FirstResponseAt == DateTime.MinValue ? (double?)null : BusinessHourCalculator.GetWorkingMinutesBetween(CreatedAt, FirstResponseAt);
+
+        IsResolutionBreached = totalResolution > SlaResolutionMinutes;
+        if (firstResponseMinutes.HasValue)
+            IsResponseBreached = firstResponseMinutes.Value > SlaFirstResponseMinutes;
+
         AddActionEvent("Resolve", actorId, actorName: actorName, fromStatus: from, toStatus: Status.ToString(), note: note);
+        AddActionEvent("ComputeSlaOnResolve", actorId, actorName: actorName, note: $"totalResolution={totalResolution:F1}m, firstResponse={firstResponseMinutes?.ToString("F1") ?? "n/a"}m");
     }
 }
 

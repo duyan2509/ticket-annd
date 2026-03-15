@@ -62,6 +62,7 @@ public class ResolveTicketCommandHandler : IRequestHandler<ResolveTicketCommand,
 
         ticket.Resolve(request.ActorId, actorName: actorName, note: request.Note);
 
+        
         await _ticketRepository.UpdateAsync(ticket);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
