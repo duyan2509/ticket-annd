@@ -22,6 +22,7 @@
             <div class="flex flex-col items-end gap-2">
               <div class="text-sm text-gray-500">Created: {{ ticket.createdAt ?? '-' }}</div>
               <div class="flex gap-2">
+                <button v-if="isAssignee && !ticket.firstResponseAt" @click="startWorking" :disabled="starting" class="px-3 py-1 bg-purple-600 text-white rounded">Start Work</button>
                 <button @click="openAssign" class="px-3 py-1 bg-blue-600 text-white rounded">Assign Team</button>
                 <button @click="openAssignMember" :disabled="!ticket.teamId" class="px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50">Assign Member</button>
                 <button v-if="ticket.status === 'WaitingCustomer' || ticket.status === 'WaitingThirdParty'" @click="continueAction" :disabled="continuing" class="px-3 py-1 bg-blue-500 text-white rounded">Continue</button>
@@ -127,18 +128,8 @@
           <div class="mt-6 prose max-w-none text-gray-800" v-html="ticket.body"></div>
         </div>
 
-          <!-- Logs moved to sidebar -->
 
-        <div class="bg-white rounded shadow p-4">
-          <h3 class="text-lg font-semibold mb-3">Comments</h3>
-          <div v-if="!ticket.comments || ticket.comments.length === 0" class="text-sm text-gray-500">No comments yet.</div>
-          <div class="space-y-3">
-            <div v-for="c in ticket.comments || []" :key="c.id" class="p-3 bg-gray-50 rounded">
-              <div class="text-sm text-gray-800">{{ c.body }}</div>
-              <div class="mt-2 text-xs text-gray-500">By {{ c.authorName }} · {{ c.createdAt }}</div>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <!-- Sidebar -->
@@ -191,10 +182,11 @@
 
 <script setup lang="ts">
 import AppHeader from '../components/AppHeader.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { TicketPauseType } from '../types/pause'
 import { useRoute } from 'vue-router'
-import { getTicketByCode, assignTeam, getTicketLogs, pauseTicket, continueTicket, resolveTicket, assignMemberToTicket } from '../api/tickets'
+import { getTicketByCode, assignTeam, getTicketLogs, pauseTicket, continueTicket, resolveTicket, assignMemberToTicket, startTicket } from '../api/tickets'
+import { getMeCache } from '../store/authStore'
 import { getTeamsByCompany, getTeamMembers } from '../api/teams'
 import Modal from '../components/Modal.vue'
 
@@ -227,6 +219,12 @@ const showResolve = ref(false)
 const resolveNote = ref('')
 const resolving = ref(false)
 const resolveError = ref('')
+const starting = ref(false)
+
+const isAssignee = computed(() => {
+  const me = getMeCache()
+  return !!me && !!ticket.value && (ticket.value.assigneeId === me.id || ticket.value.assigneeId === me.id.toLowerCase())
+})
 
 // assign member
 const showAssignMember = ref(false)
@@ -358,6 +356,19 @@ async function resolveAction() {
     resolveError.value = err?.response?.data?.message ?? err?.message ?? 'Failed to resolve ticket'
   } finally {
     resolving.value = false
+  }
+}
+
+async function startWorking() {
+  if (!ticket.value) return
+  starting.value = true
+  try {
+    await startTicket(ticket.value.id)
+    await load()
+  } catch (err: any) {
+    console.error('Start failed', err)
+  } finally {
+    starting.value = false
   }
 }
 

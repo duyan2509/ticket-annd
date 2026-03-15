@@ -53,3 +53,8 @@ export async function assignMemberToTicket(ticketId: string, userId: string) {
   const { data } = await api.post(`/tickets/${ticketId}/member/${userId}`)
   return data
 }
+
+export async function startTicket(ticketId: string) {
+  const { data } = await api.post(`/tickets/${ticketId}/start`)
+  return data
+}
