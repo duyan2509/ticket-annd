@@ -59,9 +59,11 @@
                         </select>
                         <select v-model="statusFilter" class="px-2 py-1 border rounded">
                             <option value="">All status</option>
-                            <option value="open">Open</option>
-                            <option value="closed">Closed</option>
-                            <option value="in_progress">In Progress</option>
+                            <option value="Open">Open</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="InProgress">In Progress</option>
+                            <option value="WaitingCustomer">Waiting Customer</option>
+                            <option value="WaitingThirdParty">Waiting Third Party</option>
                         </select>
                         <button @click="() => { page = 1; loadTickets() }"
                             class="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
