@@ -4,7 +4,7 @@ namespace TicketAnnd.Domain.Services;
 
 public static class BusinessHourCalculator
 {
-    // Default working hours: 09:00 - 17:00 local time, working days Mon-Fri
+    // Default working hours: 09:00 - 17:00 local time, working days Mon-Fri and Sunday
     public static double GetWorkingMinutesBetween(DateTime startUtc, DateTime endUtc)
     {
         if (endUtc <= startUtc)
@@ -22,7 +22,8 @@ public static class BusinessHourCalculator
         while (currentDay <= lastDay)
         {
             var dayOfWeek = currentDay.DayOfWeek;
-            if (dayOfWeek != DayOfWeek.Saturday && dayOfWeek != DayOfWeek.Sunday)
+            // Treat Sunday as a working day for demos; only Saturday is non-working
+            if (dayOfWeek != DayOfWeek.Saturday)
             {
                 var workStartLocal = currentDay.AddHours(9);
                 var workEndLocal = currentDay.AddHours(17);

@@ -31,7 +31,7 @@ public class StartTicketCommandHandler : IRequestHandler<StartTicketCommand, Gui
         if (ticket.FirstResponseAt == DateTime.MinValue)
         {
             ticket.FirstResponseAt = DateTime.UtcNow;
-            ticket.AddActionEvent("StartWork", request.ActorId, actorName: request.ActorEmail);
+            ticket.AddActionEvent("StartWork", request.ActorId, actorName: request.ActorEmail, fromStatus: ticket.Status.ToString(), toStatus: ticket.Status.ToString());
         }
 
         if (ticket.Status != TicketStatuses.InProgress)
