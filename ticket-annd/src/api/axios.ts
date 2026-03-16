@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
-import { getAccessToken, setAccessToken, clearAccessToken } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -8,7 +8,7 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getAccessToken()
+  const token = useAuthStore().getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -20,7 +20,11 @@ function doRefresh(): Promise<string> {
   refreshPromise = api
     .post<{ accessToken: string }>('/auth/refresh')
     .then(({ data }) => {
-      setAccessToken(data.accessToken)
+      try {
+        useAuthStore().setAccessToken(data.accessToken)
+      } catch {
+        // noop
+      }
       return data.accessToken
     })
     .finally(() => {
@@ -47,7 +51,7 @@ api.interceptors.response.use(
         return api(original)
       } catch {
         refreshPromise = null
-        clearAccessToken()
+          try { useAuthStore().clearAccessToken() } catch {}
         window.location.href = '/login'
       }
     }

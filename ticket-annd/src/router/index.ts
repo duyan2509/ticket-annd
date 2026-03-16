@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { setAccessToken } from '../store/authStore'
 import { refresh } from '../api/auth'
 import { AppRoles } from '../types/appRoles'
 
@@ -28,9 +27,10 @@ router.beforeEach(async (to, _from, next) => {
 
   if (to.meta.requiresAuth && !loggedIn) {
     if (!restorePromise) {
+      const { setTokens } = useAuth()
       restorePromise = refresh()
         .then((data) => {
-          setAccessToken(data.accessToken)
+          setTokens(data.accessToken)
           return data.accessToken
         })
         .catch(() => null)

@@ -186,7 +186,7 @@ import { ref, onMounted, computed } from 'vue'
 import { TicketPauseType } from '../types/pause'
 import { useRoute } from 'vue-router'
 import { getTicketByCode, assignTeam, getTicketLogs, pauseTicket, continueTicket, resolveTicket, assignMemberToTicket, startTicket } from '../api/tickets'
-import { getMeCache } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 import { getTeamsByCompany, getTeamMembers } from '../api/teams'
 import Modal from '../components/Modal.vue'
 
@@ -222,7 +222,7 @@ const resolveError = ref('')
 const starting = ref(false)
 
 const isAssignee = computed(() => {
-  const me = getMeCache()
+  const me = useAuthStore().me
   return !!me && !!ticket.value && (ticket.value.assigneeId === me.id || ticket.value.assigneeId === me.id.toLowerCase())
 })
 

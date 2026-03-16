@@ -1,19 +1,13 @@
-import {
-  getAccessToken,
-  setAccessToken,
-  clearAccessToken,
-  getMeCache,
-  userContext,
-} from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 import type { UserContext } from '../types/auth'
 
 export function useAuth() {
   function isLoggedIn(): boolean {
-    return !!getAccessToken()
+    return !!useAuthStore().getAccessToken()
   }
 
   function getUserContext(): UserContext | null {
-    const me = getMeCache()
+    const me = useAuthStore().getMeCache()
     if (!me) return null
     return {
       userId: me.id,
@@ -24,15 +18,15 @@ export function useAuth() {
   }
 
   function getUserContextRef() {
-    return userContext
+    return useAuthStore().me
   }
 
   function setTokens(accessToken: string): void {
-    setAccessToken(accessToken)
+    useAuthStore().setAccessToken(accessToken)
   }
 
   function clearTokens(): void {
-    clearAccessToken()
+    useAuthStore().clearAccessToken()
   }
 
   return {

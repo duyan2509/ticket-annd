@@ -1,20 +1,5 @@
-import { ref, type Ref } from 'vue'
-
-let accessToken: string | null = null
-
-export function getAccessToken(): string | null {
-  return accessToken
-}
-
-export function setAccessToken(token: string): void {
-  accessToken = token
-}
-
-export function clearAccessToken(): void {
-  accessToken = null
-  // clear reactive user context as well
-  userContext.value = null
-}
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export interface MeCache {
   id: string
@@ -24,15 +9,61 @@ export interface MeCache {
   companyName?: string | null
 }
 
-// reactive user context accessible across the app
-const userContext: Ref<MeCache | null> = ref(null)
-
-export function getMeCache(): MeCache | null {
-  return userContext.value
+export interface CurrentCompany {
+  id: string
+  name: string
+  slug: string
+  role?: string
 }
 
-export function setMeCache(data: MeCache | null): void {
-  userContext.value = data
-}
+export const useAuthStore = defineStore('auth', () => {
+  const accessToken = ref<string | null>(null)
+  const me = ref<MeCache | null>(null)
+  const currentCompany = ref<CurrentCompany | null>(null)
 
-export { userContext }
+  function getAccessToken() {
+    return accessToken.value
+  }
+  function setAccessToken(token: string) {
+    accessToken.value = token
+  }
+  function clearAccessToken() {
+    accessToken.value = null
+    me.value = null
+    currentCompany.value = null
+  }
+
+  function getMeCache() {
+    return me.value
+  }
+  function setMeCache(data: MeCache | null) {
+    me.value = data
+  }
+
+  function getUserContextRef() {
+    return me
+  }
+
+  function setCurrentCompany(c: CurrentCompany | null) {
+    currentCompany.value = c
+  }
+  function getCurrentCompanyRef() {
+    return currentCompany
+  }
+
+  return {
+    accessToken,
+    me,
+    currentCompany,
+    getAccessToken,
+    setAccessToken,
+    clearAccessToken,
+    getMeCache,
+    setMeCache,
+    getUserContextRef,
+    setCurrentCompany,
+    getCurrentCompanyRef,
+  }
+})
+
+export default useAuthStore

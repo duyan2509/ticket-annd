@@ -1,12 +1,7 @@
 <template>
   <div class="bg-white rounded shadow p-4">
     <div class="mb-4">
-      <label class="block text-sm text-gray-700">Create team</label>
-      <div class="flex gap-2 mt-2">
-        <input v-model="newTeamName" placeholder="Team name" class="px-3 py-2 border rounded w-full" />
-        <button @click="onCreateTeam" class="px-3 py-2 bg-blue-600 text-white rounded">Create</button>
-      </div>
-      <p v-if="teamError" class="text-sm text-red-500 mt-1">{{ teamError }}</p>
+      <TeamForm @submit="onCreateTeam" :error="teamError" />
     </div>
 
     <div class="overflow-x-auto">
@@ -92,9 +87,9 @@
 import { ref } from 'vue'
 import { getCurrentCompany } from '../api/companies'
 import { getTeamsByCompany, createTeam, getTeamMembers, switchMember, setLeader, updateTeam } from '../api/teams'
+import TeamForm from '../components/TeamForm.vue'
 
 const teams = ref<{ teamId: string; name: string }[]>([])
-const newTeamName = ref('')
 const teamError = ref('')
 const selectedTeamId = ref<string | null>(null)
 const selectedTeamName = ref('')    
@@ -119,15 +114,14 @@ async function loadTeams() {
   }
 }
 
-async function onCreateTeam() {
+async function onCreateTeam(name: string) {
   teamError.value = ''
-  if (!newTeamName.value || newTeamName.value.trim() === '') {
+  if (!name || name.trim() === '') {
     teamError.value = 'Name is required'
     return
   }
   try {
-    await createTeam(newTeamName.value.trim())
-    newTeamName.value = ''
+    await createTeam(name.trim())
     await loadTeams()
   } catch (err: unknown) {
     const axiosErr = err as any

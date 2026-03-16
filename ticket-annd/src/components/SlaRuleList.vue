@@ -4,14 +4,7 @@
     <div v-else>
       <h2 class="text-lg font-semibold mb-4">{{ policy?.name }} Rules</h2>
       <div class="mb-4 flex items-center gap-2">
-        <input v-model="newRuleName" placeholder="Rule name" class="px-2 py-1 border rounded text-sm" />
-        <input v-model.number="newRuleFirstResponse" type="number" placeholder="First response (min)" class="px-2 py-1 border rounded w-28 text-sm" />
-        <input v-model.number="newRuleResolution" type="number" placeholder="Resolution (min)" class="px-2 py-1 border rounded w-28 text-sm" />
-        <button @click="addRule" :disabled="creatingRule || !newRuleName.trim()" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
-          <span v-if="creatingRule">Adding...</span>
-          <span v-else>Add Rule</span>
-        </button>
-        <p v-if="createRuleError" class="text-sm text-red-500 ml-3">{{ createRuleError }}</p>
+        <SlaRuleForm @submit="(payload) => addRule(payload)" :error="createRuleError" />
       </div>
 
       <div class="overflow-x-auto">
@@ -64,6 +57,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { getSlaRulesByPolicy, createSlaRule, updateSlaRule } from '../api/sla'
+import SlaRuleForm from './SlaRuleForm.vue'
 import type { SlaPolicyItem, SlaRuleItem } from '../api/sla'
 
 const props = defineProps<{
@@ -98,17 +92,14 @@ async function loadRules() {
 
 watch(() => props.policy, () => loadRules(), { immediate: true })
 
-async function addRule() {
+async function addRule(payload: { name: string; firstResponseMinutes: number | null; resolutionMinutes: number | null }) {
   if (!props.policy) return
-  if (!newRuleName.value || !newRuleName.value.trim()) return
+  if (!payload.name || !payload.name.trim()) return
   creatingRule.value = true
   createRuleError.value = ''
   try {
-    await createSlaRule(props.policy.id, newRuleName.value.trim(), Number(newRuleFirstResponse.value ?? 0), Number(newRuleResolution.value ?? 0))
+    await createSlaRule(props.policy.id, payload.name.trim(), Number(payload.firstResponseMinutes ?? 0), Number(payload.resolutionMinutes ?? 0))
     await loadRules()
-    newRuleName.value = ''
-    newRuleFirstResponse.value = 0
-    newRuleResolution.value = 0
   } catch (err) {
     const axiosErr = err as any
     createRuleError.value = axiosErr?.response?.data?.message ?? (err instanceof Error ? err.message : 'Failed to create rule')

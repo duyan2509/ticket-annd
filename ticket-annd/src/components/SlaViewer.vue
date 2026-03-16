@@ -12,12 +12,7 @@
         <div v-if="loading" class="text-sm text-gray-600">Loading policies...</div>
         <div v-else>
             <div v-if="showNewPolicy" class="mb-3 p-3 bg-gray-50 rounded">
-                <div class="flex gap-2">
-                    <input v-model="newPolicyName" placeholder="Policy name" class="px-2 py-1 border rounded w-full" />
-                    <button @click="createPolicy()" class="px-3 py-1 bg-blue-600 text-white rounded">Create</button>
-                    <button @click="() => (showNewPolicy = false)" class="px-3 py-1 bg-gray-200 rounded">Cancel</button>
-                </div>
-                <p v-if="newPolicyError" class="text-sm text-red-500 mt-1">{{ newPolicyError }}</p>
+                <SlaPolicyForm @submit="(name) => createPolicy(name)" @cancel="() => (showNewPolicy = false)" :error="newPolicyError" />
             </div>
             <div v-if="policies.length === 0" class="text-sm text-gray-500">No SLA policies found.</div>
             <div class="space-y-2">
@@ -98,22 +93,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-2 p-3 bg-gray-50 rounded">
-                                        <div class="flex gap-2 items-center">
-                                            <input v-model="newRuleNameMap[p.id]" placeholder="Rule name"
-                                                class="px-2 py-1 border rounded w-48" />
-                                            <input type="number" v-model.number="newRuleFirstMap[p.id]"
-                                                placeholder="First response (min)"
-                                                class="px-2 py-1 border rounded w-36" />
-                                            <input type="number" v-model.number="newRuleResolutionMap[p.id]"
-                                                placeholder="Resolution (min)" class="px-2 py-1 border rounded w-36" />
-                                            <button @click.stop="createRule(p.id)"
-                                                class="px-3 py-1 bg-blue-600 text-white rounded">Add
-                                                Rule</button>
-                                        </div>
-                                        <p v-if="newRuleErrorMap[p.id]" class="text-sm text-red-500 mt-1">{{
-                                            newRuleErrorMap[p.id] }}</p>
-                                    </div>
+                                    <SlaRuleForm @submit="(payload) => createRule(p.id, payload)" :error="newRuleErrorMap[p.id]" />
                                 </div>
                             </div>
                         </div>
@@ -128,6 +108,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { getSlaPolicies, getSlaRulesByPolicy, activateSlaPolicy, createSlaPolicy, updateSlaPolicy, createSlaRule, updateSlaRule, SlaPolicyItem, SlaRuleItem } from '../api/sla'
+import SlaPolicyForm from './SlaPolicyForm.vue'
+import SlaRuleForm from './SlaRuleForm.vue'
 
 defineProps<{ companyId?: string }>()
 const emit = defineEmits(['close'] as const)
@@ -138,15 +120,11 @@ const expandedId = ref<string | null>(null)
 const rulesLoadingMap = ref<Record<string, boolean>>({})
 // new policy state
 const showNewPolicy = ref(false)
-const newPolicyName = ref('')
 const newPolicyError = ref('')
 // edit policy
 const editingPolicyId = ref<string | null>(null)
 const editingPolicyName = ref('')
 // rules create/edit state
-const newRuleNameMap = ref<Record<string, string>>({})
-const newRuleFirstMap = ref<Record<string, number>>({})
-const newRuleResolutionMap = ref<Record<string, number>>({})
 const newRuleErrorMap = ref<Record<string, string>>({})
 const editingRuleId = ref<string | null>(null)
 const editingRuleName = ref('')
@@ -180,17 +158,16 @@ async function toggleExpanded(p: SlaPolicyItem & { rules?: SlaRuleItem[] }) {
     }
 }
 
-async function createPolicy() {
+async function createPolicy(name: string) {
     newPolicyError.value = ''
-    if (!newPolicyName.value || newPolicyName.value.trim() === '') {
+    if (!name || name.trim() === '') {
         newPolicyError.value = 'Name is required'
         return
     }
     try {
-        const res = await createSlaPolicy(newPolicyName.value.trim())
+        await createSlaPolicy(name.trim())
         // reload list or push new
         await load()
-        newPolicyName.value = ''
         showNewPolicy.value = false
     } catch (err: any) {
         newPolicyError.value = err?.response?.data?.message ?? err.message ?? 'Failed to create policy'
@@ -229,26 +206,23 @@ async function onActivate(p: SlaPolicyItem) {
     }
 }
 
-async function createRule(policyId: string) {
+async function createRule(policyId: string, payload: { name: string; firstResponseMinutes: number | null; resolutionMinutes: number | null }) {
     newRuleErrorMap.value[policyId] = ''
-    const name = newRuleNameMap.value[policyId]
-    const first = newRuleFirstMap.value[policyId] ?? 0
-    const resol = newRuleResolutionMap.value[policyId] ?? 0
+    const name = payload.name
+    const first = payload.firstResponseMinutes ?? 0
+    const resol = payload.resolutionMinutes ?? 0
     if (!name || name.trim() === '') {
         newRuleErrorMap.value[policyId] = 'Name is required'
         return
     }
     try {
-        const res = await createSlaRule(policyId, name.trim(), first, resol)
+        await createSlaRule(policyId, name.trim(), first, resol)
         // reload rules for policy
         const p = policies.value.find((x) => x.id === policyId)
         if (p) {
             const rules = await getSlaRulesByPolicy(policyId)
             p.rules = rules
         }
-        newRuleNameMap.value[policyId] = ''
-        newRuleFirstMap.value[policyId] = 0
-        newRuleResolutionMap.value[policyId] = 0
     } catch (err: any) {
         newRuleErrorMap.value[policyId] = err?.response?.data?.message ?? err.message ?? 'Failed to create rule'
     }

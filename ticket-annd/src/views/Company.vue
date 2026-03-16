@@ -53,13 +53,7 @@
           <template v-else-if="showCategories">
             <div class="bg-white rounded shadow p-4">
               <div class="mb-4">
-                <label class="block text-sm text-gray-700">Add category</label>
-                <div class="flex gap-2 mt-2">
-                  <input v-model="newCategoryName" placeholder="Category name"
-                    class="px-3 py-2 border rounded w-full" />
-                  <button @click="onCreateCategory" class="px-3 py-2 bg-blue-600 text-white rounded">Add</button>
-                </div>
-                <p v-if="categoryError" class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
+                <CategoryForm @submit="onCreateCategory" :error="categoryError" />
               </div>
 
               <div class="overflow-x-auto">
@@ -113,16 +107,7 @@
           </template>
           <template v-else>
             <div>
-              <label class="block text-sm text-gray-700">Invite by email</label>
-              <div class="flex gap-2 mt-2">
-                <input v-model="inviteEmail" placeholder="email@example.com" class="px-3 py-2 border rounded w-full" />
-                <select v-model="inviteRole" class="px-3 py-2 border rounded">
-                  <option value="Customer">Customer</option>
-                  <option value="Agent">Agent</option>
-                </select>
-                <button @click="onInvite" class="px-3 py-2 bg-blue-600 text-white rounded">Invite</button>
-              </div>
-              <p v-if="inviteError" class="text-sm text-red-500 mt-1">{{ inviteError }}</p>
+              <InviteForm @submit="onInvite" :error="inviteError" />
             </div>
             <InvitationList :invitations="invitations" :showActions="false" />
           </template>
@@ -156,6 +141,8 @@ import AppHeader from '../components/AppHeader.vue'
 import InvitationList from '../components/InvitationList.vue'
 import SlaContent from '../components/SlaContent.vue'
 import Members from './Members.vue'
+import CategoryForm from '../components/CategoryForm.vue'
+import InviteForm from '../components/InviteForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -171,13 +158,10 @@ const showCategories = ref(false)
 const showSla = ref(false)
 const categories = ref<CategoryItem[]>([])
 const loadingCategories = ref(false)
-const newCategoryName = ref('')
 const categoryError = ref('')
 const editingCategoryId = ref<string | null>(null)
 const editingCategoryName = ref('')
 const editingError = ref('')
-const inviteEmail = ref('')
-const inviteRole = ref('Customer')
 const inviteError = ref('')
 const companyTotal = ref(0)
 const companyPage = ref(1)
@@ -214,15 +198,14 @@ function goDashboard() {
 
 
 
-async function onInvite() {
+async function onInvite(payload: { email: string; role: string }) {
   inviteError.value = ''
-  if (!inviteEmail.value || !/.+@.+\..+/.test(inviteEmail.value)) {
+  if (!payload.email || !/.+@.+\..+/.test(payload.email)) {
     inviteError.value = 'Invalid email'
     return
   }
   try {
-    await createInvitation(inviteEmail.value, inviteRole.value)
-    inviteEmail.value = ''
+    await createInvitation(payload.email, payload.role)
     // refresh
     if (showMembers.value) {
       const paged = await getCompanyMembers(companyPage.value, companySize.value)
@@ -356,15 +339,14 @@ function onViewSla() {
   showSla.value = !showSla.value
 }
 
-async function onCreateCategory() {
+async function onCreateCategory(name: string) {
   categoryError.value = ''
-  if (!newCategoryName.value || newCategoryName.value.trim() === '') {
+  if (!name || name.trim() === '') {
     categoryError.value = 'Name is required'
     return
   }
   try {
-    await createCategory(newCategoryName.value.trim())
-    newCategoryName.value = ''
+    await createCategory(name.trim())
     const data = await getCategories()
     categories.value = data
   } catch (err: unknown) {

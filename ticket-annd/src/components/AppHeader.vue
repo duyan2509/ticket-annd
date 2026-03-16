@@ -24,7 +24,7 @@ const { getUserContextRef, clearTokens } = useAuth()
 const userContext = getUserContextRef()
 const router = useRouter()
 
-const isSuperAdmin = computed(() => (userContext.value?.currentRole ?? '') === AppRoles.SupperAdmin)
+const isSuperAdmin = computed(() => (userContext?.currentRole ?? '') === AppRoles.SupperAdmin)
 
 async function logout() {
   try {

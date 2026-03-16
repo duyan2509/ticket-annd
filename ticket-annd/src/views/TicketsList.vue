@@ -153,7 +153,7 @@ import { getActiveSlaRules } from '../api/sla'
 import { getTeamsByCompany } from '../api/teams'
 import api from '../api/axios'
 import { createTicket, getTickets, assignTeam } from '../api/tickets'
-import { userContext } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 import { AppRoles } from '../types/appRoles'
 import { TicketPageItem } from '../types/auth'
 
@@ -186,6 +186,8 @@ const error = ref('')
 const showAssignModal = ref(false)
 const assignTicketId = ref<string | null>(null)
 const selectedTeamId = ref<string>('')
+
+const userContext = useAuthStore().me
 
 async function goGeneral() {
     router.push(`/${companySlug}`)

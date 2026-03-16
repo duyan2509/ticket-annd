@@ -1,5 +1,5 @@
 import api from './axios'
-import { setMeCache } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 import type { LoginResponse } from '../types/auth'
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
@@ -41,7 +41,11 @@ export interface MeResponse {
 
 export async function getMe(): Promise<MeResponse> {
   const { data } = await api.get<MeResponse>('/auth/me')
-  setMeCache(data)
+  try {
+    useAuthStore().setMeCache(data)
+  } catch {
+    // store not ready or not installed yet
+  }
   return data
 }
 

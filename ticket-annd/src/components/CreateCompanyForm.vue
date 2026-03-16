@@ -24,13 +24,19 @@ import { getMe } from '../api/auth'
 import { useAuth } from '../composables/useAuth'
 import { AppRoles } from '../types/appRoles'
 import type { AxiosError } from 'axios'
+import { useCreateCompanyValidation } from '../composables/useCreateCompanyValidation'
 
 const emit = defineEmits<{ (e: 'created', paged?: CompanyPagedResult): void }>()
 const name = ref('')
 const error = ref('')
 const loading = ref(false)
 
+const { v$ } = useCreateCompanyValidation({ name })
+
 async function submit() {
+  v$.value.$touch()
+  if (v$.value.$invalid) return
+
   error.value = ''
   loading.value = true
   try {
