@@ -1,4 +1,5 @@
 import api from './axios'
+import type { PagedResult } from '~/types/auth'
 
 export interface SlaPolicyItem {
   id: string
@@ -11,11 +12,6 @@ export interface SlaRuleItem {
   name: string
   firstResponseMinutes: number
   resolutionMinutes: number
-}
-
-export interface PagedResult<T> {
-  items: T[]
-  total: number
 }
 
 export function getSlaPolicies(page = 1, pageSize = 10) {

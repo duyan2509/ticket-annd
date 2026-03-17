@@ -2,12 +2,12 @@ import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
-  baseURL: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+  baseURL: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api',
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })
 
-if (process.client) {
+if (import.meta.client) {
   api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     try {
       const token = useAuthStore().getAccessToken()
@@ -34,7 +34,7 @@ if (process.client) {
     return refreshPromise
   }
 
-  const publicAuthPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password']
+  const publicAuthPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/auth/refresh']
   function isPublicAuthRequest(config: InternalAxiosRequestConfig): boolean {
     const url = config.url ?? ''
     return publicAuthPaths.some((p) => url.includes(p))
@@ -44,7 +44,7 @@ if (process.client) {
     (res) => res,
     async (err) => {
       const original = err.config as InternalAxiosRequestConfig & { _retry?: boolean }
-      if (err.response?.status === 401 && !original._retry && !isPublicAuthRequest(original)) {
+      if (err.response?.status === 401 && !original?._retry && !isPublicAuthRequest(original)) {
         original._retry = true
         try {
           const newToken = await doRefresh()
@@ -55,7 +55,9 @@ if (process.client) {
           try {
             useAuthStore().clearAccessToken()
           } catch {}
-          if (process.client) window.location.href = '/login'
+          if (import.meta.client && window.location.pathname !== '/login') {
+            window.location.href = '/login'
+          }
         }
       }
       return Promise.reject(err)

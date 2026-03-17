@@ -1,5 +1,5 @@
 import api from './axios'
-import type { InvitationItem, InvitationPagedResult, UserContext, CompanyInvitationPagedResult } from '../types/auth'
+import type { InvitationItem, UserContext, CompanyInvitationItem, PagedResult } from '../types/auth'
 import { AppRoles } from '../types/appRoles'
 
 export async function getInvitations(userContext: UserContext | null): Promise<InvitationItem[]> {
@@ -7,8 +7,8 @@ export async function getInvitations(userContext: UserContext | null): Promise<I
   return data
 }
 
-export async function getCompanyInvitations(page = 1, size = 20): Promise<CompanyInvitationPagedResult> {
-  const { data } = await api.get<CompanyInvitationPagedResult>(`/invitations/company?page=${page}&size=${size}`)
+export async function getCompanyInvitations(page = 1, size = 20): Promise<PagedResult<CompanyInvitationItem>> {
+  const { data } = await api.get<PagedResult<CompanyInvitationItem>>(`/invitations/company?page=${page}&size=${size}`)
   return data
 }
 

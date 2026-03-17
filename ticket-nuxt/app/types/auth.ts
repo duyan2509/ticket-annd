@@ -15,8 +15,8 @@ export interface CompanyOption {
   role: string
 }
 
-export interface CompanyPagedResult {
-  items: CompanyOption[]
+export interface PagedResult<T> {
+  items: T[]
   total: number
   page: number
   size: number
@@ -32,26 +32,12 @@ export interface InvitationItem {
   expires: string
 }
 
-export interface InvitationPagedResult {
-  items: InvitationItem[]
-  total: number
-  page: number
-  size: number
-}
-
 export interface CompanyInvitationItem {
   id: string
   email: string
   response_at: string | null
   status: string
   expire_at: string
-}
-
-export interface CompanyInvitationPagedResult {
-  items: CompanyInvitationItem[]
-  total: number
-  page: number
-  size: number
 }
 
 export interface MemberItem {
@@ -63,23 +49,9 @@ export interface MemberItem {
   isLeader?: boolean|false
 }
 
-export interface MemberPagedResult {
-  items: MemberItem[]
-  total: number
-  page: number
-  size: number
-}
-
 export interface CategoryItem {
   id: string
   name: string
-}
-
-export interface TicketPagedResult {
-  items: any[]
-  total: number
-  page: number
-  size: number
 }
 export interface TicketPageItem {
   id: string
@@ -101,3 +73,10 @@ export interface TicketPageItem {
   ticketCode: string
 }
 
+
+export interface CurrentCompany  {
+    id: string
+    name: string
+    slug: string
+    role?: string
+}

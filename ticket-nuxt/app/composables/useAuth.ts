@@ -1,3 +1,4 @@
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '../store/authStore'
 import type { UserContext } from '../types/auth'
 
@@ -18,7 +19,8 @@ export function useAuth() {
   }
 
   function getUserContextRef() {
-    return useAuthStore().me
+    const { me } = storeToRefs(useAuthStore())
+    return me
   }
 
   function setTokens(accessToken: string): void {

@@ -1,5 +1,5 @@
 import api from './axios'
-import type { MemberPagedResult } from '../types/auth'
+import type { MemberItem, PagedResult } from '../types/auth'
 
 export interface TeamItem {
   teamId: string
@@ -16,8 +16,8 @@ export async function createTeam(name: string) {
   return data
 }
 
-export async function getTeamMembers(teamId: string, page = 1, size = 100): Promise<MemberPagedResult> {
-  const { data } = await api.get<MemberPagedResult>(`/teams/${teamId}/members?page=${page}&size=${size}`)
+export async function getTeamMembers(teamId: string, page = 1, size = 100): Promise<PagedResult<MemberItem>> {
+  const { data } = await api.get<PagedResult<MemberItem>>(`/teams/${teamId}/members?page=${page}&size=${size}`)
   return data
 }
 

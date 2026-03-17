@@ -19,14 +19,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { createCompany, getCompanies } from '../api/companies'
-import type { CompanyPagedResult } from '../types/auth'
+import type { CompanyOption, PagedResult } from '../types/auth'
 import { getMe } from '../api/auth'
 import { useAuth } from '../composables/useAuth'
 import { AppRoles } from '../types/appRoles'
 import type { AxiosError } from 'axios'
 import { useCreateCompanyValidation } from '../composables/useCreateCompanyValidation'
 
-const emit = defineEmits<{ (e: 'created', paged?: CompanyPagedResult): void }>()
+const emit = defineEmits<{ (e: 'created', paged?: PagedResult<CompanyOption>): void }>()
 const name = ref('')
 const error = ref('')
 const loading = ref(false)

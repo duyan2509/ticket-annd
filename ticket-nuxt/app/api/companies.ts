@@ -1,11 +1,11 @@
 import api from './axios'
-import type { CompanyOption, UserContext, CompanyPagedResult } from '../types/auth'
+import type { CompanyOption, UserContext, PagedResult } from '../types/auth'
 import { useAuthStore } from '../store/authStore'
 
-export async function getCompanies(userContext: UserContext | null, page = 1, size = 10): Promise<CompanyPagedResult> {
+export async function getCompanies(userContext: UserContext | null, page = 1, size = 10): Promise<PagedResult<CompanyOption>> {
   if (!userContext) return { items: [], total: 0, page, size }
 
-  const { data } = await api.get<CompanyPagedResult>('/companies', { params: { page, size } })
+  const { data } = await api.get<PagedResult<CompanyOption>>('/companies', { params: { page, size } })
   return data
 }
 

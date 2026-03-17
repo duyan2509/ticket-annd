@@ -1,4 +1,4 @@
-import { TicketPagedResult } from '~/types/auth'
+import type { PagedResult, TicketPageItem } from '~/types/auth'
 import api from './axios'
 
 export async function getTicketByCode(ticketCode: string) {
@@ -20,7 +20,7 @@ export async function createTicket(categoryId: string, slaRuleId: string, subjec
 }
 
 export async function getTickets(params: Record<string, any> = {}) {
-  const { data } = await api.get<TicketPagedResult>('/tickets', { params })
+  const { data } = await api.get<PagedResult<TicketPageItem>>('/tickets', { params })
   return data
 }
 
