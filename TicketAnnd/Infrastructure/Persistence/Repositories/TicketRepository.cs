@@ -151,25 +151,31 @@ public async Task<TicketPagedResultReadModel> GetPagedByCompanyIdAsync(
     {
         if (string.IsNullOrWhiteSpace(ticketCode)) return null;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         var ticket = await _context.Tickets.AsNoTracking()
             .Where(t => !t.IsDeleted && t.CompanyId == companyId && t.TicketCode == ticketCode)
+            .Include(t=>t.Raiser)
+            .Include(t=>t.Team)
+            .Include(t=>t.Assignee)
+            .Include(t=>t.Category)
+            .Include(t=>t.SlaRule)
             .Select(t => new TicketReadModel
             {
                 Id = t.Id,
                 RaiserId = t.RaiserId,
-                RaiserName = _context.Users.Where(u => u.Id == t.RaiserId).Select(u => u.Email ?? string.Empty).FirstOrDefault() ?? string.Empty,
-                TeamId = t.TeamId,
-                TeamName = t.TeamId == null ? null : _context.Teams.Where(tm => tm.Id == t.TeamId).Select(tm => tm.Name).FirstOrDefault(),
+                RaiserName = t.Raiser.Email ?? string.Empty,
+                TeamId = t.TeamId??Guid.Empty,
+                TeamName = t.Team.Name ?? string.Empty,
                 AssigneeId = t.AssigneeId,
-                AssigneeName = t.AssigneeId == null ? null : _context.Users.Where(u => u.Id == t.AssigneeId).Select(u => u.Email).FirstOrDefault(),
+                AssigneeName = t.Assignee.Email ?? string.Empty,
                 CategoryId = t.CategoryId,
-                CategoryName = _context.Categories.Where(c => c.Id == t.CategoryId).Select(c => c.Name ?? string.Empty).FirstOrDefault() ?? string.Empty,
+                CategoryName = t.Category.Name ?? string.Empty,
                 Subject = t.Subject,
                 TicketCode = t.TicketCode,
                 Body = t.Body,
                 Status = t.Status.ToString(),
                 SlaRuleId = t.SlaRuleId,
-                SlaRuleName = _context.SlaRules.Where(r => r.Id == t.SlaRuleId).Select(r => r.Name ?? string.Empty).FirstOrDefault() ?? string.Empty,
+                SlaRuleName = t.SlaRule.Name ?? string.Empty    ,
                 SlaFirstResponseMinutes = t.SlaFirstResponseMinutes,
                 SlaResolutionMinutes = t.SlaResolutionMinutes,
                 FirstResponseAt = t.FirstResponseAt == DateTime.MinValue ? null : t.FirstResponseAt,
