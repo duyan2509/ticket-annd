@@ -1,7 +1,9 @@
 using MediatR;
+using Microsoft.Extensions.Options;
 using TicketAnnd.Application.Common;
 using TicketAnnd.Domain;
 using TicketAnnd.Domain.Entities;
+using TicketAnnd.Domain.Options;
 using TicketAnnd.Domain.Repositories;
 
 namespace TicketAnnd.Application.Auth;
@@ -12,24 +14,25 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
     private readonly IEmailSender _emailSender;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IConfiguration _config;
+    private readonly FrontendOptions _frontendOptions;
+
     public ForgotPasswordCommandHandler(
         IUserRepository userRepository,
         IPasswordResetTokenRepository passwordResetTokenRepository,
         IEmailSender emailSender,
         IUnitOfWork unitOfWork,
-        IConfiguration config)
+        IOptions<FrontendOptions> frontendOptions)
     {
         _userRepository = userRepository;
         _passwordResetTokenRepository = passwordResetTokenRepository;
         _emailSender = emailSender;
         _unitOfWork = unitOfWork;
-        _config = config;
+        _frontendOptions = frontendOptions.Value;
     }
 
     public async Task<Unit> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        var fe_base_url = _config["FE_URL"];
+        var fe_base_url = _frontendOptions.BaseUrl;
         var user = await _userRepository.GetLoginUserByEmailAsync(request.Email, cancellationToken);
         if (user == null)
             return Unit.Value; // Don't reveal whether email exists

@@ -1,20 +1,21 @@
 using MediatR;
+using Microsoft.Extensions.Options;
 using TicketAnnd.Application.Common;
-using Microsoft.Extensions.Configuration;
 using Hangfire;
 using TicketAnnd.Domain.Events;
+using TicketAnnd.Domain.Options;
 
 namespace TicketAnnd.Application.Invitation;
 
 public class InvitationCreatedNotificationHandler : INotificationHandler<InvitationCreatedNotification>
 {
     private readonly IEmailSender _emailSender;
-    private readonly IConfiguration _config;
+    private readonly FrontendOptions _frontendOptions;
 
-    public InvitationCreatedNotificationHandler(IEmailSender emailSender, IConfiguration config)
+    public InvitationCreatedNotificationHandler(IEmailSender emailSender, IOptions<FrontendOptions> frontendOptions)
     {
         _emailSender = emailSender;
-        _config = config;
+        _frontendOptions = frontendOptions.Value;
     }
 
     public async Task Handle(InvitationCreatedNotification notification, CancellationToken cancellationToken)
@@ -22,7 +23,7 @@ public class InvitationCreatedNotificationHandler : INotificationHandler<Invitat
         var companyName = notification.CompanyName ?? "your company";
         var subject = "You're invited to join " + companyName;
 
-        var fe_base_url = _config["FE_URL"] ?? string.Empty;
+        var fe_base_url = _frontendOptions.BaseUrl;
 
         var registerLink = string.IsNullOrWhiteSpace(fe_base_url)
             ? string.Empty

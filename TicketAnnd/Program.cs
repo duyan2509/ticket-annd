@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
 using Serilog;
 using System.Security.Claims;
 using TicketAnnd;
 using TicketAnnd.Extensions;
+using TicketAnnd.Domain.Options;
 using Hangfire;
 using Hangfire.Common;
 using TicketAnnd.Infrastructure.Services;
@@ -32,21 +34,21 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
         System.Text.Json.JsonNamingPolicy.CamelCase;
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        var allowedOrigins = builder.Configuration
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>()
-            ?? (builder.Configuration["Cors:AllowedOrigins"]?
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:5173" };
+builder.Services.AddCors();
 
-        policy.WithOrigins(allowedOrigins)
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+// Configure CORS policy using CorsOptions via IConfigureOptions
+builder.Services.AddSingleton<IConfigureOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>>(sp =>
+{
+    var corsOptions = sp.GetRequiredService<IOptions<TicketAnnd.Domain.Options.CorsOptions>>().Value;
+    return new ConfigureOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.WithOrigins(corsOptions.AllowedOrigins)
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
     });
 });
 

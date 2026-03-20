@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TicketAnnd.Application.Common;
 using TicketAnnd.Domain.Entities;
+using TicketAnnd.Domain.Options;
 using TicketAnnd.Infrastructure.Persistence;
 
 namespace TicketAnnd.Extensions;
@@ -11,17 +13,14 @@ public static class SeedDataExtensions
     {
         using var scope = app.ApplicationServices.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<TicketAnndDbContext>();
-        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        var seedAdminOptions = scope.ServiceProvider.GetRequiredService<IOptions<SeedAdminOptions>>().Value;
 
-        var email = config["SeedAdmin:Email"];
-        var password = config["SeedAdmin:Password"];
-
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(seedAdminOptions.Email) || string.IsNullOrWhiteSpace(seedAdminOptions.Password))
             return;
 
         var exists = await context.Users
             .AsNoTracking()
-            .AnyAsync(u => u.Email == email, cancellationToken);
+            .AnyAsync(u => u.Email == seedAdminOptions.Email, cancellationToken);
 
         if (exists)
             return;
@@ -29,8 +28,8 @@ public static class SeedDataExtensions
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Email = email.Trim(),
-            PasswordHash = PasswordHasher.Hash(password),
+            Email = seedAdminOptions.Email.Trim(),
+            PasswordHash = PasswordHasher.Hash(seedAdminOptions.Password),
             IsActive = true,
             IsSuperAdmin = true
         };
